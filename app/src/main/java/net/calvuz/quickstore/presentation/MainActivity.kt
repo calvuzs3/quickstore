@@ -1,29 +1,40 @@
 package net.calvuz.quickstore.presentation
 
 import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import dagger.hilt.android.AndroidEntryPoint
-import net.calvuz.quickstore.R
+import net.calvuz.quickstore.presentation.navigation.AppNavigation
+import net.calvuz.quickstore.presentation.ui.theme.QuickStoreTheme
 
+/**
+ * MainActivity principale dell'app
+ *
+ * Ospita la navigazione Compose e applica il tema Material 3
+ */
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
-
-    val TAG ="Main"
+class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Enable edge-to-edge per UI moderna
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+
+        setContent {
+            QuickStoreTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    AppNavigation()
+                }
+            }
         }
-
-
     }
-
 }

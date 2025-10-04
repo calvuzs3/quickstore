@@ -22,6 +22,11 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // Necessario per OpenCV native libraries
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+        }
     }
 
     buildTypes {
@@ -47,9 +52,16 @@ android {
         compose = true
     }
 
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+
+        // Evita conflitti con librerie native
+        // usato per OpenCV
+        jniLibs {
+            useLegacyPackaging = false
         }
     }
 
@@ -98,6 +110,11 @@ dependencies {
     implementation(libs.androidx.camera.view)
 
     // OpenCV - Nota: aggiungi il modulo opencv manualmente
+    // OpenCV Android SDK
+    implementation("com.quickbirdstudios:opencv:4.5.3.0")
+
+    // Per gestione immagini
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
 //    implementation(project(":opencv"))
 
     // Coil for Image Loading

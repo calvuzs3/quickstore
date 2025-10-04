@@ -1,7 +1,7 @@
 package net.calvuz.quickstore.data.local.database
 
 import androidx.room.TypeConverter
-import net.calvuz.quickstore.data.local.entity.MovementType
+import net.calvuz.quickstore.domain.model.MovementType
 
 /**
  * Type Converters per Room Database

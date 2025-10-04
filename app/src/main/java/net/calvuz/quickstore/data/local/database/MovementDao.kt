@@ -2,8 +2,8 @@ package net.calvuz.quickstore.data.local.database
 
 import androidx.room.*
 import net.calvuz.quickstore.data.local.entity.MovementEntity
-import net.calvuz.quickstore.data.local.entity.MovementType
 import kotlinx.coroutines.flow.Flow
+import net.calvuz.quickstore.domain.model.MovementType
 
 /**
  * DAO per operazioni sulla tabella movements
@@ -14,14 +14,26 @@ interface MovementDao {
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(movement: MovementEntity)
 
+    @Delete
+    suspend fun delete(movement: MovementEntity)
+
     @Query("SELECT * FROM movements WHERE uuid = :uuid")
     suspend fun getByUuid(uuid: String): MovementEntity?
 
     @Query("SELECT * FROM movements WHERE article_uuid = :articleUuid ORDER BY timestamp DESC")
-    fun observeByArticleUuid(articleUuid: String): Flow<List<MovementEntity>>
+    suspend fun getByArticleUuid(articleUuid: String): List<MovementEntity>
+
+    @Query("SELECT * FROM movements ORDER BY timestamp DESC")
+    fun observeAll(): Flow<List<MovementEntity>>
 
     @Query("SELECT * FROM movements WHERE article_uuid = :articleUuid ORDER BY timestamp DESC")
-    suspend fun getByArticleUuid(articleUuid: String): List<MovementEntity>
+    fun observeByArticleUuid(articleUuid: String): Flow<List<MovementEntity>>
+
+    @Query("SELECT * FROM movements WHERE type = :type ORDER BY timestamp DESC")
+    fun observeByType(type: MovementType): Flow<List<MovementEntity>>
+
+    @Query("SELECT * FROM movements WHERE timestamp BETWEEN :start AND :end ORDER BY timestamp DESC")
+    fun observeByDateRange(start: Long, end: Long): Flow<List<MovementEntity>>
 
     @Query("SELECT * FROM movements ORDER BY timestamp DESC LIMIT :limit")
     fun observeRecent(limit: Int = 10): Flow<List<MovementEntity>>

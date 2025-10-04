@@ -19,7 +19,7 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideWarehouseDatabase(
+    fun provideQuickStoreDatabase(
         @ApplicationContext context: Context
     ): QuickStoreDatabase {
         return Room.databaseBuilder(

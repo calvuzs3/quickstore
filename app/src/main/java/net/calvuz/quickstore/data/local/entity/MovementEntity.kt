@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import net.calvuz.quickstore.domain.model.MovementType
 
 /**
  * Entity per la tabella movements - Storico movimentazioni magazzino
@@ -44,11 +45,3 @@ data class MovementEntity(
     @ColumnInfo(name = "timestamp")
     val timestamp: Long // Unix timestamp UTC in milliseconds
 )
-
-/**
- * Tipo di movimentazione
- */
-enum class MovementType {
-    IN,  // Entrata
-    OUT  // Uscita
-}
