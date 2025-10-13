@@ -43,7 +43,7 @@ fun SearchResultsScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Indietro")
+                        Icon(Icons.Default.ArrowBackIosNew, "Indietro")
                     }
                 }
             )
@@ -125,33 +125,44 @@ private fun ArticleResultCard(
                     style = MaterialTheme.typography.titleMedium
                 )
 
-                if (article.description.isNotBlank()) {
-                    Text(
-                        text = article.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2
-                    )
+//                if (article.description.isNotBlank()) {
+//                    Text(
+//                        text = article.description,
+//                        style = MaterialTheme.typography.bodySmall,
+//                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+//                        maxLines = 2
+//                    )
+//                }
+
+                article.description?.let {
+                    if (it.isNotBlank()) {
+                        Text(
+                            text = article.description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2
+                        )
+                    }
                 }
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    if (article.sku.isNotBlank()) {
-                        Text(
-                            text = "SKU: ${article.sku}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    if (article.barcode.isNotBlank()) {
-                        Text(
-                            text = "Barcode: ${article.barcode}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+//                    if (article.sku.isNotBlank()) {
+//                        Text(
+//                            text = "SKU: ${article.sku}",
+//                            style = MaterialTheme.typography.labelSmall,
+//                            color = MaterialTheme.colorScheme.onSurfaceVariant
+//                        )
+//                    }
+//
+//                    if (article.barcode.isNotBlank()) {
+//                        Text(
+//                            text = "Barcode: ${article.barcode}",
+//                            style = MaterialTheme.typography.labelSmall,
+//                            color = MaterialTheme.colorScheme.onSurfaceVariant
+//                        )
+//                    }
                 }
             }
 
@@ -175,7 +186,7 @@ private fun EmptyResultsContent() {
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            Icons.Default.SearchOff,
+            Icons.Default.Search, // .SearchOff,
             contentDescription = null,
             modifier = Modifier.size(72.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant

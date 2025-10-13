@@ -3,6 +3,7 @@ package net.calvuz.quickstore.domain.usecase.article
 import net.calvuz.quickstore.domain.model.Article
 import net.calvuz.quickstore.domain.repository.ArticleRepository
 import kotlinx.coroutines.flow.Flow
+import net.calvuz.quickstore.domain.model.Inventory
 import javax.inject.Inject
 
 /**
@@ -12,13 +13,29 @@ class GetArticleUseCase @Inject constructor(
     private val articleRepository: ArticleRepository
 ) {
     /**
+    * Recupera tutti gli articoli
+    */
+    suspend fun getAll(): Result<List<Article>> {
+        return try {
+            articleRepository.getAll()
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
      * Ottiene un articolo per UUID
      */
     suspend fun getByUuid(uuid: String): Result<Article?> {
-        if (uuid.isBlank()) {
-            return Result.failure(IllegalArgumentException("UUID cannot be blank"))
+        return try {
+            if (uuid.isBlank()) {
+                return Result.failure(IllegalArgumentException("UUID non valido"))
+            }
+
+            articleRepository.getByUuid(uuid)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-        return articleRepository.getArticleByUuid(uuid)
     }
 
     /**
@@ -38,15 +55,31 @@ class GetArticleUseCase @Inject constructor(
     /**
      * Cerca articoli per nome
      */
-    fun searchByName(query: String): Flow<List<Article>> {
-        return articleRepository.searchArticlesByName(query.trim())
+    suspend fun searchByName(query: String): Result<List<Article>> {
+        return try {
+            if (query.isBlank()) {
+                return getAll()
+            }
+
+            articleRepository.searchByName(query)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     /**
      * Ottiene articoli per categoria
      */
-    fun getByCategory(category: String): Flow<List<Article>> {
-        return articleRepository.getArticlesByCategory(category.trim())
+    suspend fun getByCategory(category: String): Result<List<Article>> {
+        return try {
+            if (category.isBlank()) {
+                return getAll()
+            }
+
+            articleRepository.getByCategory(category)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     /**
@@ -54,5 +87,28 @@ class GetArticleUseCase @Inject constructor(
      */
     suspend fun getCount(): Result<Int> {
         return articleRepository.getArticlesCount()
+    }
+
+    /**
+     * Recupera inventario di un articolo
+     */
+    suspend fun getInventory(articleUuid: String): Result<Inventory?> {
+        return try {
+            if (articleUuid.isBlank()) {
+                return Result.failure(IllegalArgumentException("UUID non valido"))
+            }
+
+            articleRepository.getInventory(articleUuid)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Osserva inventario di un articolo
+     */
+    fun observeInventory(articleUuid: String): Flow<Inventory?> {
+        require(articleUuid.isNotBlank()) { "UUID non valido" }
+        return articleRepository.observeInventory(articleUuid)
     }
 }

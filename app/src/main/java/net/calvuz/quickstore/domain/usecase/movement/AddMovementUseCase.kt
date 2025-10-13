@@ -74,12 +74,12 @@ class AddMovementUseCase @Inject constructor(
 
         // Crea movimento
         val movement = Movement(
-            uuid = UUID.randomUUID().toString(),
+            id = 0,
             articleUuid = articleUuid,
             type = type,
             quantity = quantity,
-            note = note.trim(),
-            timestamp = System.currentTimeMillis()
+            notes = note.trim(),
+            createdAt  = System.currentTimeMillis()
         )
 
         // Registra movimento (transazionale con update inventory)

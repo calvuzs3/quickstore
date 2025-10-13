@@ -13,6 +13,12 @@ import kotlinx.coroutines.flow.Flow
 interface ArticleRepository {
 
     /**
+     * Aggiunge un nuovo articolo con inventario iniziale
+     * Operazione transazionale
+     */
+    suspend fun addArticle(article: Article, initialQuantity: Double): Result<String>
+
+    /**
      * Inserisce un nuovo articolo con inventario iniziale
      * @return true se l'inserimento è riuscito, false altrimenti
      */
@@ -26,7 +32,12 @@ interface ArticleRepository {
     /**
      * Elimina un articolo (cascade su inventory, movements, images)
      */
-    suspend fun deleteArticle(articleUuid: String): Result<Unit>
+    suspend fun deleteArticle(uuid: String): Result<Unit>
+
+    /**
+     * Recupera tutti gli articoli
+     */
+    suspend fun getAll(): Result<List<Article>>
 
     /**
      * Ottiene un articolo per UUID
@@ -38,6 +49,30 @@ interface ArticleRepository {
      */
     suspend fun getByUuid(uuid: String): Result<Article?>
 
+    /**
+     * Cerca articoli per nome
+     */
+    suspend fun searchByName(query: String): Result<List<Article>>
+
+    /**
+     * Recupera articoli per categoria
+     */
+    suspend fun getByCategory(category: String): Result<List<Article>>
+
+    /**
+     * Recupera articoli per SKU
+     */
+    suspend fun getBySku(sku: String): Result<Article?>
+
+    /**
+     * Recupera articoli per barcode
+     */
+    suspend fun getByBarcode(barcode: String): Result<Article?>
+
+    /**
+     * Osserva tutti gli articoli
+     */
+    fun observeAll(): Flow<List<Article>>
 
     /**
      * Osserva un articolo per UUID (Flow reattivo)
@@ -48,16 +83,6 @@ interface ArticleRepository {
      * Osserva tutti gli articoli ordinati per nome
      */
     fun observeAllArticles(): Flow<List<Article>>
-
-    /**
-     * Cerca articoli per nome
-     */
-    fun searchArticlesByName(query: String): Flow<List<Article>>
-
-    /**
-     * Ottiene articoli per categoria
-     */
-    fun getArticlesByCategory(category: String): Flow<List<Article>>
 
     /**
      * Ottiene l'inventario di un articolo

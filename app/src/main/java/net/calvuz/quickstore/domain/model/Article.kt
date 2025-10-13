@@ -10,9 +10,13 @@ package net.calvuz.quickstore.domain.model
 data class Article(
     val uuid: String,
     val name: String,
-    val description: String?,
-    val unitOfMeasure: String,
-    val category: String?,
-    val createdAt: Long,      // Unix timestamp UTC in milliseconds
-    val updatedAt: Long       // Aggiornato solo per modifiche anagrafiche
+    val description: String,
+    val sku: String,              // Stock Keeping Unit - identificativo interno
+    val barcode: String,          // Codice a barre (EAN, UPC, etc.)
+    val category: String,
+    val unitOfMeasure: String,    // pz, kg, lt, mt, etc.
+    val reorderLevel: Double,     // Soglia sotto scorta (0 = disabilitato)
+    val notes: String,            // Note aggiuntive
+    val createdAt: Long,          // UTC timestamp milliseconds
+    val updatedAt: Long           // UTC timestamp milliseconds
 )

@@ -22,13 +22,13 @@ import net.calvuz.quickstore.domain.model.MovementType
     ],
     indices = [
         Index(value = ["article_uuid"]),
-        Index(value = ["timestamp"])
+        Index(value = ["created_at"])
     ]
 )
 data class MovementEntity(
-    @PrimaryKey
-    @ColumnInfo(name = "uuid")
-    val uuid: String,
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    val id: Long,
 
     @ColumnInfo(name = "article_uuid")
     val articleUuid: String,
@@ -39,9 +39,9 @@ data class MovementEntity(
     @ColumnInfo(name = "quantity")
     val quantity: Double, // Double per supportare decimali
 
-    @ColumnInfo(name = "note")
-    val note: String,
+    @ColumnInfo(name = "notes")
+    val notes: String,
 
-    @ColumnInfo(name = "timestamp")
-    val timestamp: Long // Unix timestamp UTC in milliseconds
+    @ColumnInfo(name = "created_at")
+    val createdAt: Long // Unix timestamp UTC in milliseconds
 )

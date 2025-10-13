@@ -17,13 +17,55 @@ import javax.inject.Inject
  */
 class ArticleRepositoryImpl @Inject constructor(
     private val articleDao: ArticleDao,
-    private val inventoryDao: InventoryDao
+    private val inventoryDao: InventoryDao,
+    private val articleMapper: ArticleMapper,
+    private val inventoryMapper: InventoryMapper
 ) : ArticleRepository {
+
+    override suspend fun addArticle(article: Article, initialQuantity: Double): Result<String> {
+        return try {
+            // Transaction: inserisci articolo + inventario iniziale
+            val articleEntity = articleMapper.toEntity(article)
+            articleDao.insert(articleEntity)
+
+            // Crea inventario iniziale
+            val inventoryEntity = InventoryEntity(
+                articleUuid = article.uuid,
+                currentQuantity = initialQuantity,
+                lastMovementAt = System.currentTimeMillis()
+            )
+            inventoryDao.insert(inventoryEntity)
+
+            Result.success(article.uuid)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getByUuid(uuid: String): Result<Article?> {
+        return try {
+            val entity = articleDao.getByUuid(uuid)
+            val article = entity?.let { articleMapper.toDomain(it) }
+            Result.success(article)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getAll(): Result<List<Article>> {
+        return try {
+            val entities = articleDao.getAll()
+            val articles = entities.map { articleMapper.toDomain(it) }
+            Result.success(articles)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     override suspend fun insertArticle(article: Article, initialQuantity: Double): Result<Unit> {
         return try {
             // Inserisci articolo
-            articleDao.insert(ArticleMapper.toEntity(article))
+            articleDao.insert(articleMapper.toEntity(article))
 
             // Crea inventario iniziale
             val inventory = InventoryEntity(
@@ -41,69 +83,91 @@ class ArticleRepositoryImpl @Inject constructor(
 
     override suspend fun updateArticle(article: Article): Result<Unit> {
         return try {
-            articleDao.update(ArticleMapper.toEntity(article))
+            val entity = articleMapper.toEntity(article)
+            articleDao.update(entity)
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    override suspend fun deleteArticle(articleUuid: String): Result<Unit> {
+    override suspend fun deleteArticle(uuid: String): Result<Unit> {
         return try {
-            val article = articleDao.getByUuid(articleUuid)
-            if (article != null) {
-                articleDao.delete(article)
-                Result.success(Unit)
-            } else {
-                Result.failure(IllegalArgumentException("Article not found"))
-            }
+            val article = articleDao.getByUuid(uuid)
+                ?: return Result.success(Unit) // Già eliminato
+
+            articleDao.delete(article)
+            Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
     override suspend fun getArticleByUuid(uuid: String): Result<Article?> {
+        return getByUuid(uuid)
+    }
+
+    override suspend fun getByCategory(category: String): Result<List<Article>> {
         return try {
-            val entity = articleDao.getByUuid(uuid)
-            val article = entity?.let { ArticleMapper.toDomain(it) }
+            val entities = articleDao.getByCategory(category)
+            val articles = entities.map { articleMapper.toDomain(it) }
+            Result.success(articles)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getBySku(sku: String): Result<Article?> {
+        return try {
+            val entity = articleDao.getBySku(sku)
+            val article = entity?.let { articleMapper.toDomain(it) }
             Result.success(article)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    override suspend fun getByUuid(uuid: String): Result<Article?> {
-        return getArticleByUuid(uuid)
+    override suspend fun getByBarcode(barcode: String): Result<Article?> {
+        return try {
+            val entity = articleDao.getByBarcode(barcode)
+            val article = entity?.let { articleMapper.toDomain(it) }
+            Result.success(article)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override fun observeAll(): Flow<List<Article>> {
+        return articleDao.observeAll()
+            .map { entities -> entities.map { articleMapper.toDomain(it) } }
     }
 
     override fun observeArticleByUuid(uuid: String): Flow<Article?> {
         return articleDao.observeByUuid(uuid).map { entity ->
-            entity?.let { ArticleMapper.toDomain(it) }
+            entity?.let { articleMapper.toDomain(it) }
         }
     }
 
     override fun observeAllArticles(): Flow<List<Article>> {
         return articleDao.observeAll().map { entities ->
-            ArticleMapper.toDomainList(entities)
+            articleMapper.toDomainList(entities)
         }
     }
 
-    override fun searchArticlesByName(query: String): Flow<List<Article>> {
-        return articleDao.searchByName(query).map { entities ->
-            ArticleMapper.toDomainList(entities)
-        }
-    }
-
-    override fun getArticlesByCategory(category: String): Flow<List<Article>> {
-        return articleDao.getByCategory(category).map { entities ->
-            ArticleMapper.toDomainList(entities)
+    override suspend fun searchByName(query: String): Result<List<Article>> {
+        return try {
+            val entities = articleDao.searchByName("%$query%")
+            val articles = entities.map { articleMapper.toDomain(it) }
+            Result.success(articles)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
     override suspend fun getInventory(articleUuid: String): Result<Inventory?> {
         return try {
             val entity = inventoryDao.getByArticleUuid(articleUuid)
-            val inventory = entity?.let { InventoryMapper.toDomain(it) }
+            val inventory = entity?.let { inventoryMapper.toDomain(it) }
             Result.success(inventory)
         } catch (e: Exception) {
             Result.failure(e)
@@ -112,7 +176,7 @@ class ArticleRepositoryImpl @Inject constructor(
 
     override fun observeInventory(articleUuid: String): Flow<Inventory?> {
         return inventoryDao.observeByArticleUuid(articleUuid).map { entity ->
-            entity?.let { InventoryMapper.toDomain(it) }
+            entity?.let { inventoryMapper.toDomain(it) }
         }
     }
 

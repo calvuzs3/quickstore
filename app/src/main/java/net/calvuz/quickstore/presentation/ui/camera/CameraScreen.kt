@@ -1,7 +1,10 @@
 package net.calvuz.quickstore.presentation.ui.camera
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -23,20 +26,18 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberPermissionState
 import java.io.ByteArrayOutputStream
 
 /**
  * Camera Screen per catturare foto articoli
  *
  * Features:
- * - Camera permission handling
+ * - Camera permission handling NATIVO
  * - Live camera preview
  * - Photo capture
  * - Search by image
  */
-@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CameraScreen(
     onSearchResults: (List<String>) -> Unit,
@@ -47,6 +48,30 @@ fun CameraScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    // Permission state
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    // Permission launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasCameraPermission = isGranted
+    }
+
+    // Request permission on first launch
+    LaunchedEffect(Unit) {
+        if (!hasCameraPermission) {
+            permissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
     // Camera controller
     val cameraController = remember {
         LifecycleCameraController(context).apply {
@@ -55,20 +80,13 @@ fun CameraScreen(
         }
     }
 
-    // Permission state
-    val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
-
-    LaunchedEffect(Unit) {
-        if (!cameraPermissionState.hasPermission) {
-            cameraPermissionState.launchPermissionRequest()
-        }
-    }
-
     // Handle UI state changes
     LaunchedEffect(uiState) {
         when (val state = uiState) {
             is CameraUiState.SearchSuccess -> {
-                onSearchResults(state.articleUuids)
+                // Estrai UUID dagli articoli per la navigazione
+                val articleUuids = state.articles.map { it.uuid }
+                onSearchResults(articleUuids)
                 viewModel.resetState()
             }
             else -> {}
@@ -81,7 +99,7 @@ fun CameraScreen(
                 title = { Text("Ricerca per Foto") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, "Indietro")
+                        Icon(Icons.Default.ArrowBackIosNew, "Indietro")
                     }
                 }
             )
@@ -93,10 +111,12 @@ fun CameraScreen(
                 .padding(paddingValues)
         ) {
             when {
-                !cameraPermissionState.hasPermission -> {
+                !hasCameraPermission -> {
                     // Permission denied screen
                     PermissionDeniedContent(
-                        onRequestPermission = { cameraPermissionState.launchPermissionRequest() }
+                        onRequestPermission = {
+                            permissionLauncher.launch(Manifest.permission.CAMERA)
+                        }
                     )
                 }
 
@@ -200,13 +220,26 @@ private fun CameraPreviewContent(
             }
 
             // Capture button
+            val isEnabled = uiState is CameraUiState.Ready ||
+                    uiState is CameraUiState.NoResults ||
+                    uiState is CameraUiState.Error
+
             FloatingActionButton(
                 onClick = {
-                    capturePhoto(cameraController, context, onCapturePhoto)
+                    if (isEnabled) {
+                        capturePhoto(cameraController, context, onCapturePhoto)
+                    }
                 },
-                enabled = uiState is CameraUiState.Ready ||
-                        uiState is CameraUiState.NoResults ||
-                        uiState is CameraUiState.Error,
+                containerColor = if (isEnabled) {
+                    MaterialTheme.colorScheme.primaryContainer
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant
+                },
+                contentColor = if (isEnabled) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
                 modifier = Modifier.size(72.dp)
             ) {
                 Icon(

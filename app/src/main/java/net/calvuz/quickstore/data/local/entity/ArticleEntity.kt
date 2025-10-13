@@ -12,6 +12,7 @@ import androidx.room.PrimaryKey
  */
 @Entity(tableName = "articles")
 data class ArticleEntity(
+
     @PrimaryKey
     @ColumnInfo(name = "uuid")
     val uuid: String,
@@ -20,13 +21,25 @@ data class ArticleEntity(
     val name: String,
 
     @ColumnInfo(name = "description")
-    val description: String?,
+    val description: String,
+
+    @ColumnInfo(name = "sku")
+    val sku: String,  // Stock Keeping Unit - identificativo interno
+
+    @ColumnInfo(name = "barcode")
+    val barcode: String,  // Codice a barre (EAN, UPC, etc.)
+
+    @ColumnInfo(name = "category")
+    val category: String,
 
     @ColumnInfo(name = "unit_of_measure")
     val unitOfMeasure: String,
 
-    @ColumnInfo(name = "category")
-    val category: String?,
+    @ColumnInfo(name = "reorder_level")
+    val reorderLevel: Double,  // Soglia sotto scorta
+
+    @ColumnInfo(name = "notes")
+    val notes: String,  // Note aggiuntive
 
     @ColumnInfo(name = "created_at")
     val createdAt: Long, // Unix timestamp UTC in milliseconds

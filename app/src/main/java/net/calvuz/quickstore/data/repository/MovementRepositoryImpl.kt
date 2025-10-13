@@ -19,7 +19,8 @@ import javax.inject.Inject
 class MovementRepositoryImpl @Inject constructor(
     private val database: QuickStoreDatabase,
     private val movementDao: MovementDao,
-    private val inventoryDao: InventoryDao
+    private val inventoryDao: InventoryDao,
+    private val movementMapper: MovementMapper
 ) : MovementRepository {
 
     override suspend fun addMovement(movement: Movement): Result<Unit> {
@@ -27,7 +28,7 @@ class MovementRepositoryImpl @Inject constructor(
             // Operazione transazionale: inserisci movimento + aggiorna inventario
             database.withTransaction {
                 // Inserisci movimento
-                movementDao.insert(MovementMapper.toEntity(movement))
+                movementDao.insert(movementMapper.toEntity(movement))
 
                 // Aggiorna inventario
                 val inventory = inventoryDao.getByArticleUuid(movement.articleUuid)
@@ -46,7 +47,7 @@ class MovementRepositoryImpl @Inject constructor(
 
                 val updatedInventory = inventory.copy(
                     currentQuantity = newQuantity,
-                    lastMovementAt = movement.timestamp
+                    lastMovementAt = movement.createdAt
                 )
 
                 inventoryDao.update(updatedInventory)
@@ -58,10 +59,17 @@ class MovementRepositoryImpl @Inject constructor(
         }
     }
 
+    /**
+     * Recupera tutti i movimenti
+     */
+    override suspend fun getAllMovements(): Result<List<Movement>> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun getMovementByUuid(uuid: String): Result<Movement?> {
         return try {
-            val entity = movementDao.getByUuid(uuid)
-            val movement = entity?.let { MovementMapper.toDomain(it) }
+            val entity = movementDao.getById(uuid)
+            val movement = entity?.let { movementMapper.toDomain(it) }
             Result.success(movement)
         } catch (e: Exception) {
             Result.failure(e)
@@ -70,14 +78,27 @@ class MovementRepositoryImpl @Inject constructor(
 
     override fun observeMovementsByArticle(articleUuid: String): Flow<List<Movement>> {
         return movementDao.observeByArticleUuid(articleUuid).map { entities ->
-            MovementMapper.toDomainList(entities)
+            movementMapper.toDomainList(entities)
         }
     }
 
     override suspend fun getMovementsByArticle(articleUuid: String): Result<List<Movement>> {
         return try {
             val entities = movementDao.getByArticleUuid(articleUuid)
-            val movements = MovementMapper.toDomainList(entities)
+            val movements = movementMapper.toDomainList(entities)
+            Result.success(movements)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Recupera ultimi N movimenti ordinati per data (desc)
+     */
+    override suspend fun getRecentMovements(limit: Int): Result<List<Movement>> {
+        return try {
+            val entities = movementDao.getRecentMovements(limit)
+            val movements = entities.map { movementMapper.toDomain(it) }
             Result.success(movements)
         } catch (e: Exception) {
             Result.failure(e)
@@ -86,13 +107,13 @@ class MovementRepositoryImpl @Inject constructor(
 
     override fun observeAllMovements(): Flow<List<Movement>> {
         return movementDao.observeAll().map { entities ->
-            MovementMapper.toDomainList(entities)
+            movementMapper.toDomainList(entities)
         }
     }
 
     override fun observeMovementsByType(type: MovementType): Flow<List<Movement>> {
         return movementDao.observeByType(type).map { entities ->
-            MovementMapper.toDomainList(entities)
+            movementMapper.toDomainList(entities)
         }
     }
 
@@ -101,13 +122,13 @@ class MovementRepositoryImpl @Inject constructor(
         endTimestamp: Long
     ): Flow<List<Movement>> {
         return movementDao.observeByDateRange(startTimestamp, endTimestamp).map { entities ->
-            MovementMapper.toDomainList(entities)
+            movementMapper.toDomainList(entities)
         }
     }
 
     override suspend fun deleteMovement(uuid: String): Result<Unit> {
         return try {
-            val movement = movementDao.getByUuid(uuid)
+            val movement = movementDao.getById(uuid)
             if (movement != null) {
                 movementDao.delete(movement)
                 Result.success(Unit)

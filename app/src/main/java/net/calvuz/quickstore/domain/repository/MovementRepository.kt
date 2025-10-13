@@ -22,14 +22,14 @@ interface MovementRepository {
     suspend fun addMovement(movement: Movement): Result<Unit>
 
     /**
+     * Recupera tutti i movimenti
+     */
+    suspend fun getAllMovements(): Result<List<Movement>>
+
+    /**
      * Ottiene una movimentazione per UUID
      */
     suspend fun getMovementByUuid(uuid: String): Result<Movement?>
-
-    /**
-     * Osserva tutte le movimentazioni di un articolo ordinate per timestamp DESC
-     */
-    fun observeMovementsByArticle(articleUuid: String): Flow<List<Movement>>
 
     /**
      * Ottiene tutte le movimentazioni di un articolo
@@ -37,9 +37,19 @@ interface MovementRepository {
     suspend fun getMovementsByArticle(articleUuid: String): Result<List<Movement>>
 
     /**
+     * Recupera ultimi N movimenti ordinati per data (desc)
+     */
+    suspend fun getRecentMovements(limit: Int): Result<List<Movement>>
+
+    /**
      * Osserva tutte le movimentazioni (per storico generale)
      */
     fun observeAllMovements(): Flow<List<Movement>>
+
+    /**
+     * Osserva tutte le movimentazioni di un articolo ordinate per timestamp DESC
+     */
+    fun observeMovementsByArticle(articleUuid: String): Flow<List<Movement>>
 
     /**
      * Ottiene movimentazioni filtrate per tipo

@@ -23,9 +23,13 @@ class AddArticleUseCase @Inject constructor(
      */
     suspend operator fun invoke(
         name: String,
-        description: String? = null,
+        description: String,
+        sku: String,
+        barcode: String,
+        recorderLevel: Double,
+        notes: String,
         unitOfMeasure: String,
-        category: String? = null,
+        category: String,
         initialQuantity: Double = 0.0
     ): Result<Article> {
         // Validazione input
@@ -46,9 +50,13 @@ class AddArticleUseCase @Inject constructor(
         val article = Article(
             uuid = UUID.randomUUID().toString(),
             name = name.trim(),
-            description = description?.trim(),
+            description = description.trim(),
+            sku = sku.trim(),
+            barcode = barcode.trim(),
+            reorderLevel = recorderLevel,
+            notes = notes,
             unitOfMeasure = unitOfMeasure.trim().uppercase(),
-            category = category?.trim(),
+            category = category.trim(),
             createdAt = currentTime,
             updatedAt = currentTime
         )

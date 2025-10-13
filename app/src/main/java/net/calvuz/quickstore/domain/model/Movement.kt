@@ -1,22 +1,24 @@
 package net.calvuz.quickstore.domain.model
 
 /**
- * Domain Model per Movement
- * Rappresenta una movimentazione di magazzino (entrata o uscita).
+ * Domain Model per Movimento Magazzino
+ *
+ * Rappresenta una movimentazione (carico/scarico) nel sistema.
+ * Indipendente dal database (Clean Architecture).
  */
 data class Movement(
-    val uuid: String,
-    val articleUuid: String,
-    val type: MovementType,
-    val quantity: Double,           // Double per supportare decimali
-    val note: String,
-    val timestamp: Long             // Unix timestamp UTC in milliseconds
+    val id: Long,                 // ID auto-incrementato (0 = non ancora salvato)
+    val articleUuid: String,      // Riferimento all'articolo
+    val type: MovementType,       // Tipo movimento (IN/OUT)
+    val quantity: Double,         // Quantità movimentata
+    val notes: String,            // Note aggiuntive
+    val createdAt: Long           // UTC timestamp milliseconds
 )
 
 /**
- * Tipo di movimentazione
+ * Enum per tipo di movimento
  */
 enum class MovementType {
-    IN,     // Entrata
-    OUT     // Uscita
+    IN,   // Carico - aumenta giacenza
+    OUT   // Scarico - diminuisce giacenza
 }

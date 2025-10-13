@@ -11,48 +11,112 @@ import net.calvuz.quickstore.domain.model.MovementType
 @Dao
 interface MovementDao {
 
+    /**
+     * Inserisce movimento e aggiorna inventario in una transazione
+     */
+    @Transaction
+    suspend fun insertMovementAndUpdateInventory(
+        movement: MovementEntity,
+        articleUuid: String,
+        quantityDelta: Double
+    ): Long {
+        // Inserisci movimento
+        val movementId = insert(movement)
+
+        // Aggiorna inventario
+        updateInventoryQuantity(articleUuid, quantityDelta)
+
+        return 1 //movementId
+    }
+
+    /**
+     * Aggiorna quantità inventario (usato nella transazione)
+     */
+    @Query("""
+        UPDATE inventory 
+        SET current_quantity = current_quantity + :delta,
+            last_movement_at = :lastMovementAt
+        WHERE article_uuid = :articleUuid
+    """)
+    suspend fun updateInventoryQuantity(
+        articleUuid: String,
+        delta: Double,
+        lastMovementAt: Long = System.currentTimeMillis()
+    )
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(movement: MovementEntity)
 
     @Delete
     suspend fun delete(movement: MovementEntity)
 
-    @Query("SELECT * FROM movements WHERE uuid = :uuid")
-    suspend fun getByUuid(uuid: String): MovementEntity?
+    /**
+     * Elimina tutti i movimenti di un articolo
+     */
+    @Query("DELETE FROM movements WHERE article_uuid = :articleUuid")
+    suspend fun deleteByArticleUuid(articleUuid: String): Int
 
-    @Query("SELECT * FROM movements WHERE article_uuid = :articleUuid ORDER BY timestamp DESC")
+    @Query("SELECT * FROM movements WHERE id = :id")
+    suspend fun getById(id: Long): MovementEntity?
+
+    @Query("SELECT * FROM movements WHERE id = :id")
+    suspend fun getById(id: String): MovementEntity?
+
+    @Query("SELECT * FROM movements WHERE article_uuid = :articleUuid ORDER BY created_at DESC")
     suspend fun getByArticleUuid(articleUuid: String): List<MovementEntity>
 
-    @Query("SELECT * FROM movements ORDER BY timestamp DESC")
+    /**
+     * Recupera movimenti per tipo
+     */
+    @Query("SELECT * FROM movements WHERE type = :type ORDER BY created_at DESC")
+    suspend fun getByType(type: String): List<MovementEntity>
+
+    /**
+     * Recupera movimenti in un range di date
+     */
+    @Query("""
+        SELECT * FROM movements 
+        WHERE created_at BETWEEN :startTimestamp AND :endTimestamp 
+        ORDER BY created_at DESC
+    """)
+    suspend fun getByDateRange(startTimestamp: Long, endTimestamp: Long): List<MovementEntity>
+
+    /**
+     * Recupera ultimi N movimenti ordinati per data (più recenti prima)
+     */
+    @Query("SELECT * FROM movements ORDER BY created_at DESC LIMIT :limit")
+    suspend fun getRecentMovements(limit: Int): List<MovementEntity>
+
+    @Query("SELECT * FROM movements ORDER BY created_at DESC")
     fun observeAll(): Flow<List<MovementEntity>>
 
-    @Query("SELECT * FROM movements WHERE article_uuid = :articleUuid ORDER BY timestamp DESC")
+    @Query("SELECT * FROM movements WHERE article_uuid = :articleUuid ORDER BY created_at DESC")
     fun observeByArticleUuid(articleUuid: String): Flow<List<MovementEntity>>
 
-    @Query("SELECT * FROM movements WHERE type = :type ORDER BY timestamp DESC")
+    @Query("SELECT * FROM movements WHERE type = :type ORDER BY created_at DESC")
     fun observeByType(type: MovementType): Flow<List<MovementEntity>>
 
-    @Query("SELECT * FROM movements WHERE timestamp BETWEEN :start AND :end ORDER BY timestamp DESC")
+    @Query("SELECT * FROM movements WHERE created_at BETWEEN :start AND :end ORDER BY created_at DESC")
     fun observeByDateRange(start: Long, end: Long): Flow<List<MovementEntity>>
 
-    @Query("SELECT * FROM movements ORDER BY timestamp DESC LIMIT :limit")
+    @Query("SELECT * FROM movements ORDER BY created_at DESC LIMIT :limit")
     fun observeRecent(limit: Int = 10): Flow<List<MovementEntity>>
 
     @Query("""
         SELECT * FROM movements 
-        WHERE timestamp >= :startTimestamp AND timestamp <= :endTimestamp 
-        ORDER BY timestamp DESC
+        WHERE created_at >= :startTimestamp AND created_at <= :endTimestamp 
+        ORDER BY created_at DESC
     """)
     fun observeByPeriod(startTimestamp: Long, endTimestamp: Long): Flow<List<MovementEntity>>
 
     @Query("""
         SELECT * FROM movements 
         WHERE article_uuid = :articleUuid AND type = :type 
-        ORDER BY timestamp DESC
+        ORDER BY created_at DESC
     """)
     fun observeByArticleAndType(articleUuid: String, type: MovementType): Flow<List<MovementEntity>>
 
-    @Query("SELECT COUNT(*) FROM movements WHERE timestamp >= :todayStart")
+    @Query("SELECT COUNT(*) FROM movements WHERE created_at >= :todayStart")
     suspend fun getTodayCount(todayStart: Long): Int
 
     @Query("""
@@ -61,4 +125,11 @@ interface MovementDao {
         WHERE article_uuid = :articleUuid
     """)
     suspend fun calculateTotalQuantity(articleUuid: String): Double?
+
+    /**
+     * Conta movimenti per articolo
+     */
+    @Query("SELECT COUNT(*) FROM movements WHERE article_uuid = :articleUuid")
+    suspend fun countByArticle(articleUuid: String): Int
+
 }

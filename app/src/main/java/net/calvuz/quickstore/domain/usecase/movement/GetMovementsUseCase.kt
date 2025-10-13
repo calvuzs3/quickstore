@@ -13,6 +13,47 @@ class GetMovementsUseCase @Inject constructor(
     private val movementRepository: MovementRepository
 ) {
     /**
+     * Recupera tutti i movimenti di un articolo
+     */
+    suspend operator fun invoke(articleUuid: String): Result<List<Movement>> {
+        return try {
+            if (articleUuid.isBlank()) {
+                return Result.failure(IllegalArgumentException("UUID articolo non valido"))
+            }
+
+            movementRepository.getMovementsByArticle(articleUuid)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Recupera tutti i movimenti
+     */
+    suspend fun getAll(): Result<List<Movement>> {
+        return try {
+            movementRepository.getAllMovements()
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Recupera ultimi N movimenti (ordinati per data decrescente)
+     */
+    suspend fun getRecent(limit: Int = 10): Result<List<Movement>> {
+        return try {
+            if (limit <= 0) {
+                return Result.failure(IllegalArgumentException("Limit deve essere > 0"))
+            }
+
+            movementRepository.getRecentMovements(limit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
      * Ottiene una movimentazione per UUID
      */
     suspend fun getByUuid(uuid: String): Result<Movement?> {
@@ -35,6 +76,14 @@ class GetMovementsUseCase @Inject constructor(
      */
     suspend fun getByArticle(articleUuid: String): Result<List<Movement>> {
         return movementRepository.getMovementsByArticle(articleUuid)
+    }
+
+    /**
+     * Osserva i movimenti di un articolo
+     */
+    fun observe(articleUuid: String): Flow<List<Movement>> {
+        require(articleUuid.isNotBlank()) { "UUID articolo non valido" }
+        return movementRepository.observeMovementsByArticle(articleUuid)
     }
 
     /**

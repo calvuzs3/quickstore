@@ -1,20 +1,25 @@
 package net.calvuz.quickstore.data.local.database
 
 import androidx.room.TypeConverter
-import net.calvuz.quickstore.domain.model.MovementType
 
 /**
  * Type Converters per Room Database
+ *
+ * Room supporta solo tipi primitivi, quindi convertiamo:
+ * - Enum → String (tramite .name e valueOf())
+ * - Altri tipi custom se necessari
+ *
+ * Note: MovementType non serve più converter perché
+ * salviamo direttamente String nel DB e convertiamo
+ * solo a livello Mapper (Entity ↔ Domain)
  */
 class Converters {
 
-    @TypeConverter
-    fun fromMovementType(type: MovementType): String {
-        return type.name
-    }
+    // Aggiungi qui altri converters se necessari in futuro
+    // Esempio:
+    // @TypeConverter
+    // fun fromTimestamp(value: Long?): Date? {
+    //     return value?.let { Date(it) }
+    // }
 
-    @TypeConverter
-    fun toMovementType(value: String): MovementType {
-        return MovementType.valueOf(value)
-    }
 }

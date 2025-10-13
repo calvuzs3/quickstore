@@ -558,3 +558,463 @@ Hai ora una **completa integrazione OpenCV** con:
 
 
 
+---
+
+# Aggiornamento dopo la Phase 4
+
+# QuickStore - Gestione Magazzino con Riconoscimento Immagini
+
+App Android per gestione inventario con ricerca articoli tramite foto utilizzando OpenCV.
+
+---
+
+## 📁 Organizzazione Package
+
+```
+net.calvuz.quickstore/
+│
+├── 📱 presentation/           # Layer Presentazione (UI + ViewModels)
+│   ├── ui/
+│   │   ├── camera/           # ✅ Ricerca con foto (Fase 4)
+│   │   │   ├── CameraScreen.kt
+│   │   │   ├── CameraViewModel.kt
+│   │   │   ├── SearchResultsScreen.kt
+│   │   │   └── SearchResultsViewModel.kt
+│   │   ├── theme/            # ✅ Material 3 Theme (Fase 4)
+│   │   │   ├── Color.kt
+│   │   │   ├── Theme.kt
+│   │   │   └── Type.kt
+│   │   ├── articles/         # 🔜 Lista articoli (Fase 5)
+│   │   │   ├── list/
+│   │   │   ├── detail/
+│   │   │   └── add/
+│   │   ├── movements/        # 🔜 Movimentazioni (Fase 5)
+│   │   │   ├── list/
+│   │   │   └── add/
+│   │   ├── home/             # 🔜 Dashboard (Fase 5)
+│   │   └── common/           # 🔜 Componenti riutilizzabili
+│   └── navigation/           # ✅ Setup navigazione (Fase 4)
+│       └── AppNavigation.kt
+│
+├── 🎯 domain/                 # Layer Domain (Business Logic)
+│   ├── model/                # ✅ Domain Models (Fase 2)
+│   │   ├── Article.kt
+│   │   ├── Inventory.kt
+│   │   ├── Movement.kt
+│   │   └── ArticleImage.kt
+│   ├── usecase/              # ✅ Use Cases (Fase 2 + 4)
+│   │   ├── article/
+│   │   │   ├── AddArticleUseCase.kt
+│   │   │   ├── GetArticleUseCase.kt
+│   │   │   ├── UpdateArticleUseCase.kt
+│   │   │   └── DeleteArticleUseCase.kt
+│   │   ├── movement/
+│   │   │   ├── AddMovementUseCase.kt
+│   │   │   └── GetMovementsUseCase.kt
+│   │   └── recognition/
+│   │       ├── SearchArticleByImageUseCase.kt
+│   │       ├── SaveArticleImageUseCase.kt         # ✅ Fase 4
+│   │       ├── DeleteArticleImageUseCase.kt       # ✅ Fase 4
+│   │       └── GetArticleImagesUseCase.kt         # ✅ Fase 4
+│   └── repository/           # ✅ Repository Interfaces (Fase 2 + 4)
+│       ├── ArticleRepository.kt
+│       ├── MovementRepository.kt
+│       └── ImageRecognitionRepository.kt (aggiornato)
+│
+├── 💾 data/                   # Layer Data (Implementazioni)
+│   ├── local/
+│   │   ├── database/         # ✅ Room Database (Fase 1 + 4)
+│   │   │   ├── QuickStoreDatabase.kt
+│   │   │   ├── Converters.kt
+│   │   │   ├── ArticleDao.kt
+│   │   │   ├── InventoryDao.kt
+│   │   │   ├── MovementDao.kt
+│   │   │   └── ArticleImageDao.kt (completato Fase 4)
+│   │   ├── entity/           # ✅ Room Entities (Fase 1)
+│   │   │   ├── ArticleEntity.kt
+│   │   │   ├── InventoryEntity.kt
+│   │   │   ├── MovementEntity.kt
+│   │   │   └── ArticleImageEntity.kt
+│   │   └── storage/          # ✅ File Storage (Fase 3)
+│   │       └── ImageStorageManager.kt
+│   ├── opencv/               # ✅ OpenCV Integration (Fase 3)
+│   │   ├── OpenCVManager.kt
+│   │   ├── FeatureExtractor.kt
+│   │   └── ImageMatcher.kt
+│   ├── mapper/               # ✅ Entity ↔ Domain (Fase 2 + 4)
+│   │   ├── ArticleMapper.kt (convertito in class)
+│   │   ├── InventoryMapper.kt (convertito in class)
+│   │   ├── MovementMapper.kt (convertito in class)
+│   │   └── ArticleImageMapper.kt (aggiunto Fase 4)
+│   └── repository/           # ✅ Repository Implementations (Fase 2 + 3 + 4)
+│       ├── ArticleRepositoryImpl.kt
+│       ├── MovementRepositoryImpl.kt
+│       └── ImageRecognitionRepositoryImpl.kt (completato)
+│
+├── 🔧 di/                     # ✅ Dependency Injection (Fase 1 + 3 + 4)
+│   ├── DatabaseModule.kt
+│   ├── OpenCVModule.kt
+│   ├── RepositoryModule.kt (aggiornato Fase 4)
+│   └── MapperModule.kt (aggiunto Fase 4)
+│
+├── 🛠️ util/                  # Utilities
+│   ├── DateTimeUtils.kt
+│   ├── Constants.kt
+│   └── Extensions.kt
+│
+├── QuickStoreApplication.kt   # ✅ Application Class (Fase 1 + 3)
+└── MainActivity.kt            # ✅ Main Activity (Fase 4)
+```
+
+---
+
+## 🏗️ Principi Clean Architecture
+
+### Layer Presentation
+- **Responsabilità**: UI e gestione stato
+- **Dipendenze**: Dipende da Domain
+- **Tecnologie**: Jetpack Compose, ViewModels, Navigation, CameraX
+- **NON può**: Accedere direttamente ai DAO o Entity
+
+### Layer Domain
+- **Responsabilità**: Business logic pura
+- **Dipendenze**: NESSUNA (solo Kotlin puro)
+- **Contenuto**: Models, Use Cases, Repository Interfaces
+- **NON può**: Conoscere Android Framework o Room
+
+### Layer Data
+- **Responsabilità**: Implementazione accesso dati
+- **Dipendenze**: Dipende da Domain
+- **Tecnologie**: Room, OpenCV, File System, CameraX
+- **NON può**: Essere conosciuto da Domain (solo tramite interfacce)
+
+---
+
+## 📋 Progress Tracker
+
+### ✅ Fase 1 - Database & Setup (Completata)
+- [x] Setup Gradle con dipendenze
+- [x] Application class con Hilt
+- [x] Database Entities (ArticleEntity, InventoryEntity, MovementEntity, ArticleImageEntity)
+- [x] DAO interfaces (ArticleDao, InventoryDao, MovementDao, ArticleImageDao)
+- [x] QuickStoreDatabase con Room
+- [x] TypeConverters per enum
+- [x] DatabaseModule per Hilt DI
+- [x] Struttura cartelle Clean Architecture
+
+### ✅ Fase 2 - Domain Layer (Completata)
+- [x] 4 Domain Models (Article, Inventory, Movement, ArticleImage)
+- [x] 4 Mappers Entity ↔ Domain
+- [x] 3 Repository Interfaces
+- [x] 3 Repository Implementations
+- [x] 7 Use Cases (Article CRUD, Movement, Search by Image)
+
+### ✅ Fase 3 - OpenCV Integration (Completata)
+- [x] OpenCVManager - Inizializzazione SDK
+- [x] FeatureExtractor - Estrazione features ORB
+- [x] ImageMatcher - Matching con BFMatcher
+- [x] ImageStorageManager - Gestione file immagini
+- [x] ImageRecognitionRepositoryImpl - Pipeline completa
+- [x] OpenCVModule per Hilt DI
+- [x] QuickStoreApplication - Init OpenCV
+
+### ✅ Fase 4 - UI Camera & Fix (Completata)
+
+#### 📦 Componenti Creati
+- [x] **ArticleImageDao** - Completato con tutti i metodi
+- [x] **Use Cases per Immagini:**
+    - SaveArticleImageUseCase
+    - DeleteArticleImageUseCase
+    - GetArticleImagesUseCase
+- [x] **UI Screens:**
+    - CameraScreen (con permessi nativi Android)
+    - SearchResultsScreen
+- [x] **ViewModels:**
+    - CameraViewModel
+    - SearchResultsViewModel
+- [x] **Navigation:**
+    - AppNavigation con Compose Navigation
+    - Routes per Camera e SearchResults
+- [x] **Tema Material 3:**
+    - Color.kt (Light + Dark theme)
+    - Theme.kt (Dynamic color support)
+    - Type.kt (Typography)
+- [x] **MainActivity** - Setup con Compose
+
+#### 🔧 Fix Applicati
+- [x] **Compatibilità tipi** - CameraViewModel ora usa `List<Article>` invece di `List<String>`
+- [x] **Icone Material** - Sostituite icone mancanti:
+    - `Inventory` → `Warehouse`
+    - Tutte le icone funzionanti
+- [x] **Permessi Camera** - Implementati con sistema nativo Android (senza Accompanist)
+- [x] **FloatingActionButton** - Rimosso parametro `enabled` (non supportato in M3)
+- [x] **Mapper Hilt** - Risolto MissingBinding:
+    - Convertiti da `object` a `class @Inject constructor()`
+    - Creato MapperModule per DI
+    - Tutti i mapper iniettabili
+
+#### 📱 Dipendenze Aggiunte
+- [x] Jetpack Compose BOM 2024.02.00
+- [x] CameraX 1.3.1
+- [x] Coil 2.5.0 (image loading)
+- [x] Navigation Compose 2.7.7
+- [x] Hilt Navigation Compose 1.1.0
+
+#### 🎨 Features Implementate
+- [x] Camera preview con CameraX
+- [x] Permission handling nativo
+- [x] Cattura foto e conversione JPEG
+- [x] Ricerca articoli per immagine
+- [x] Visualizzazione risultati ricerca
+- [x] Material 3 theme (Light/Dark/Dynamic)
+- [x] Edge-to-edge UI
+
+---
+
+## 🚀 Fase 5 - Schermate Principali (Prossima)
+
+### 1. HomeScreen - Dashboard
+- [ ] Statistiche magazzino
+- [ ] Articoli sotto scorta minima
+- [ ] Ultimi movimenti
+- [ ] Accesso rapido funzionalità
+
+### 2. ArticleListScreen
+- [ ] Lista articoli con paginazione
+- [ ] Search bar
+- [ ] Filtri per categoria
+- [ ] Ordinamento
+- [ ] Pull to refresh
+
+### 3. ArticleDetailScreen
+- [ ] Info articolo completo
+- [ ] Galleria immagini
+- [ ] Storico movimenti
+- [ ] Giacenza corrente
+- [ ] Azioni (Modifica, Elimina, Carico/Scarico)
+
+### 4. AddArticleScreen
+- [ ] Form inserimento articolo
+- [ ] Validazione campi
+- [ ] Scan barcode
+- [ ] Upload immagini
+- [ ] Imposta giacenza iniziale
+
+### 5. MovementsListScreen
+- [ ] Lista movimenti con filtri
+- [ ] Filtro per tipo (Carico/Scarico)
+- [ ] Filtro per data
+- [ ] Raggruppamento per articolo
+
+### 6. AddMovementScreen
+- [ ] Selezione articolo
+- [ ] Tipo movimento (IN/OUT)
+- [ ] Quantità
+- [ ] Note opzionali
+- [ ] Validazione giacenza disponibile
+
+### 7. Componenti Comuni
+- [ ] LoadingDialog
+- [ ] ErrorDialog
+- [ ] ConfirmationDialog
+- [ ] EmptyState component
+- [ ] SearchBar component
+- [ ] ArticleCard component
+
+---
+
+## 📝 Note Tecniche
+
+### Timestamp Management
+- Tutti i timestamp sono UTC Long (milliseconds since epoch)
+- Conversione a LocalDateTime solo nel Presentation layer
+- Formato visualizzazione: `DateTimeUtils.formatDateTime(timestamp)`
+
+### Gestione Quantità
+- Inventory e Movement usano `Double` per unità frazionarie
+- Validazione quantità > 0 negli Use Cases
+- Controllo disponibilità inventario per scarichi
+- Transazioni atomiche per coerenza dati
+
+### Foreign Keys & Cascade
+- Tutte le FK hanno `onDelete = CASCADE`
+- Eliminare articolo → elimina automaticamente inventory, movements, images
+- Garantisce integrità referenziale
+
+### Memory Management OpenCV
+- **CRITICO**: Tutti i `Mat` devono essere `.release()`
+- Repository gestisce cleanup automatico
+- Finally block per cleanup in caso di errore
+
+### Storage Immagini
+- Path: `/data/data/net.calvuz.quickstore/files/article_images/{articleUuid}/`
+- Compressione JPEG quality 85%
+- Backup su cloud da implementare (Fase 6+)
+
+### Performance
+- Feature extraction: ~100-300ms per immagine
+- Image matching: ~10-50ms per confronto
+- Search completo: dipende da numero immagini in DB
+- Ottimizzazione: indexing features (TODO Fase 6+)
+
+---
+
+## 🎯 Architettura Implementata
+
+### Error Handling
+- Tutti i metodi suspend usano `Result<T>`
+- Gestione errori funzionale e type-safe
+- Validazioni centralizzate negli Use Cases
+- UI mostra errori in dialog/snackbar
+
+### Reactive Programming
+- `Flow` per dati che cambiano (UI reactive)
+- `StateFlow` per stati UI nei ViewModel
+- `suspend fun` per operazioni one-shot
+
+### Dependency Injection
+- Hilt per tutto il progetto
+- Singleton per Database, Repository, Mapper
+- ViewModel scoped per Use Cases
+- Modular structure (DatabaseModule, OpenCVModule, RepositoryModule, MapperModule)
+
+### Navigation
+- Compose Navigation
+- Type-safe routes
+- Argument passing via route parameters
+- Deep linking support (TODO Fase 6+)
+
+---
+
+## 🧪 Testing (Fase 6+)
+
+### Unit Tests
+- [ ] Use Cases business logic
+- [ ] Repository implementations
+- [ ] Mappers
+- [ ] ViewModel logic
+
+### Integration Tests
+- [ ] Database operations
+- [ ] OpenCV pipeline
+- [ ] Repository + DAO
+
+### UI Tests
+- [ ] Compose UI tests
+- [ ] Navigation flows
+- [ ] Camera permission handling
+- [ ] Search functionality
+
+---
+
+## 📱 Build & Run
+
+### Requisiti
+- Android Studio Hedgehog | 2023.1.1+
+- Kotlin 1.9.0+
+- Android SDK 24+ (Android 7.0+)
+- Gradle 8.0+
+
+### Setup Progetto
+```bash
+# Clone repository
+git clone https://github.com/calvuz/quickstore.git
+cd quickstore
+
+# Sync Gradle
+./gradlew clean build
+
+# Run su device/emulator
+./gradlew installDebug
+```
+
+### Dipendenze Principali
+- Room 2.6.1 - Database
+- Hilt 2.48 - Dependency Injection
+- Jetpack Compose BOM 2024.02.00 - UI
+- CameraX 1.3.1 - Camera
+- OpenCV 4.5.3.0 - Image recognition
+- Kotlin Coroutines 1.7.3 - Async
+
+---
+
+## 🐛 Known Issues & Limitations
+
+### Attuali
+- Nessun issue bloccante ✅
+
+### Limitazioni
+- OpenCV recognition funziona meglio con:
+    - Buona illuminazione
+    - Immagini chiare e a fuoco
+    - Oggetti con texture/pattern distintivi
+- Threshold similarità configurabile (default 0.7)
+- Performance matching dipende da numero immagini in DB
+
+### TODO Ottimizzazioni
+- Implementare cache per features estratte
+- Pagination per lista articoli/movimenti
+- Background sync per backup
+- Offline-first architecture completa
+
+---
+
+## 📄 License
+
+Progetto interno Calvuz - Tutti i diritti riservati
+
+---
+
+## 👤 Autori
+
+**Calvuz Team**
+- Architecture & Backend: [Nome]
+- UI/UX Design: [Nome]
+- OpenCV Integration: [Nome]
+
+---
+
+## 📚 Documentazione Aggiuntiva
+
+- [Clean Architecture Guide](docs/architecture.md)
+- [OpenCV Setup Guide](docs/opencv-setup.md)
+- [Database Schema](docs/database-schema.md)
+- [API Documentation](docs/api-docs.md)
+
+---
+
+## 🎉 Status Progetto
+
+**Fase Corrente:** ✅ Fase 4 Completata
+
+**Prossimo Milestone:** 🚀 Fase 5 - Schermate Principali
+
+**Percentuale Completamento:** ~60%
+
+**Ultima Build:** ✅ Compila senza errori
+
+**UI Funzionanti:**
+- ✅ Camera + Search by Image
+- 🔜 Home Dashboard
+- 🔜 Article List & Detail
+- 🔜 Movements Management
+
+**Pronto per:** Test utente su feature Camera & Search! 📸
+
+
+
+---
+
+📋 Stato Fase 5
+✅ Completate (2/7)
+
+HomeScreen
+ArticleListScreen
+
+🔜 Da Completare (5/7)
+
+ArticleDetailScreen
+AddArticleScreen
+MovementsListScreen
+AddMovementScreen
+Componenti comuni (dialogs, etc.)

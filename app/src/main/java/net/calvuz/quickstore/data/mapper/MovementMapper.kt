@@ -2,23 +2,24 @@ package net.calvuz.quickstore.data.mapper
 
 import net.calvuz.quickstore.data.local.entity.MovementEntity
 import net.calvuz.quickstore.domain.model.Movement
+import javax.inject.Inject
 
 /**
  * Mapper per convertire tra MovementEntity (data layer) e Movement (domain layer)
  */
-object MovementMapper {
+class MovementMapper @Inject constructor() {
 
     /**
      * Converte da Entity a Domain Model
      */
     fun toDomain(entity: MovementEntity): Movement {
         return Movement(
-            uuid = entity.uuid,
+            id = entity.id,
             articleUuid = entity.articleUuid,
             type = entity.type,
             quantity = entity.quantity,
-            note = entity.note,
-            timestamp = entity.timestamp
+            notes = entity.notes,
+            createdAt = entity.createdAt
         )
     }
 
@@ -27,12 +28,12 @@ object MovementMapper {
      */
     fun toEntity(domain: Movement): MovementEntity {
         return MovementEntity(
-            uuid = domain.uuid,
+            id = domain.id,
             articleUuid = domain.articleUuid,
             type = domain.type,
             quantity = domain.quantity,
-            note = domain.note,
-            timestamp = domain.timestamp
+            notes = domain.notes,
+            createdAt = domain.createdAt
         )
     }
 
@@ -41,5 +42,12 @@ object MovementMapper {
      */
     fun toDomainList(entities: List<MovementEntity>): List<Movement> {
         return entities.map { toDomain(it) }
+    }
+
+    /**
+     * Lista Domain → Lista Entity
+     */
+    fun toEntityList(domains: List<Movement>): List<MovementEntity> {
+        return domains.map { toEntity(it) }
     }
 }

@@ -2,11 +2,12 @@ package net.calvuz.quickstore.data.mapper
 
 import net.calvuz.quickstore.data.local.entity.ArticleEntity
 import net.calvuz.quickstore.domain.model.Article
+import javax.inject.Inject
 
 /**
  * Mapper per convertire tra ArticleEntity (data layer) e Article (domain layer)
  */
-object ArticleMapper {
+class ArticleMapper @Inject constructor() {
 
     /**
      * Converte da Entity a Domain Model
@@ -16,8 +17,12 @@ object ArticleMapper {
             uuid = entity.uuid,
             name = entity.name,
             description = entity.description,
-            unitOfMeasure = entity.unitOfMeasure,
+            sku = entity.sku,
+            barcode = entity.barcode,
             category = entity.category,
+            unitOfMeasure = entity.unitOfMeasure,
+            reorderLevel = entity.reorderLevel,
+            notes = entity.notes,
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt
         )
@@ -31,17 +36,28 @@ object ArticleMapper {
             uuid = domain.uuid,
             name = domain.name,
             description = domain.description,
-            unitOfMeasure = domain.unitOfMeasure,
+            sku = domain.sku,
+            barcode = domain.barcode,
             category = domain.category,
+            unitOfMeasure = domain.unitOfMeasure,
+            reorderLevel = domain.reorderLevel,
+            notes = domain.notes,
             createdAt = domain.createdAt,
             updatedAt = domain.updatedAt
         )
     }
 
     /**
-     * Converte una lista di Entity in lista di Domain Models
+     * Lista Entity → Lista Domain
      */
     fun toDomainList(entities: List<ArticleEntity>): List<Article> {
         return entities.map { toDomain(it) }
+    }
+
+    /**
+     * Lista Domain → Lista Entity
+     */
+    fun toEntityList(domains: List<Article>): List<ArticleEntity> {
+        return domains.map { toEntity(it) }
     }
 }

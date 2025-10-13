@@ -21,7 +21,8 @@ class ImageRecognitionRepositoryImpl @Inject constructor(
     private val imageStorageManager: ImageStorageManager,
     private val featureExtractor: FeatureExtractor,
     private val imageMatcher: ImageMatcher,
-    private val openCVManager: OpenCVManager
+    private val openCVManager: OpenCVManager,
+    private val mapper: ArticleImageMapper
 ) : ImageRecognitionRepository {
 
     override suspend fun saveArticleImage(
@@ -58,7 +59,7 @@ class ImageRecognitionRepositoryImpl @Inject constructor(
 
             // 4. Ritorna domain model con ID generato
             val savedEntity = entity.copy(id = imageId)
-            val articleImage = ArticleImageMapper.toDomain(savedEntity)
+            val articleImage = mapper.toDomain(savedEntity)
 
             Result.success(articleImage)
 
@@ -70,7 +71,7 @@ class ImageRecognitionRepositoryImpl @Inject constructor(
     override suspend fun getArticleImages(articleUuid: String): Result<List<ArticleImage>> {
         return try {
             val entities = articleImageDao.getByArticleUuid(articleUuid)
-            val images = ArticleImageMapper.toDomainList(entities)
+            val images = mapper.toDomainList(entities)
             Result.success(images)
         } catch (e: Exception) {
             Result.failure(e)
@@ -88,7 +89,7 @@ class ImageRecognitionRepositoryImpl @Inject constructor(
 
     override fun observeArticleImages(articleUuid: String): Flow<List<ArticleImage>> {
         return articleImageDao.observeByArticleUuid(articleUuid).map { entities ->
-            ArticleImageMapper.toDomainList(entities)
+            mapper.toDomainList(entities)
         }
     }
 

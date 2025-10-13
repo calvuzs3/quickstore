@@ -21,7 +21,6 @@ import net.calvuz.quickstore.data.local.entity.MovementEntity
     version = 1,
     exportSchema = true
 )
-@TypeConverters(Converters::class)
 abstract class QuickStoreDatabase: RoomDatabase() {
 
     abstract fun articleDao(): ArticleDao

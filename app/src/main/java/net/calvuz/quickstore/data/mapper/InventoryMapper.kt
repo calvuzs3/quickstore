@@ -2,11 +2,12 @@ package net.calvuz.quickstore.data.mapper
 
 import net.calvuz.quickstore.data.local.entity.InventoryEntity
 import net.calvuz.quickstore.domain.model.Inventory
+import javax.inject.Inject
 
 /**
  * Mapper per convertire tra InventoryEntity (data layer) e Inventory (domain layer)
  */
-object InventoryMapper {
+class InventoryMapper @Inject constructor() {
 
     /**
      * Converte da Entity a Domain Model
