@@ -13,12 +13,6 @@ import kotlinx.coroutines.flow.Flow
 interface ArticleRepository {
 
     /**
-     * Aggiunge un nuovo articolo con inventario iniziale
-     * Operazione transazionale
-     */
-    suspend fun addArticle(article: Article, initialQuantity: Double): Result<String>
-
-    /**
      * Inserisce un nuovo articolo con inventario iniziale
      * @return true se l'inserimento è riuscito, false altrimenti
      */
@@ -42,11 +36,6 @@ interface ArticleRepository {
     /**
      * Ottiene un articolo per UUID
      */
-    suspend fun getArticleByUuid(uuid: String): Result<Article?>
-
-    /**
-     * Ottiene un articolo per UUID
-     */
     suspend fun getByUuid(uuid: String): Result<Article?>
 
     /**
@@ -60,16 +49,6 @@ interface ArticleRepository {
     suspend fun getByCategory(category: String): Result<List<Article>>
 
     /**
-     * Recupera articoli per SKU
-     */
-    suspend fun getBySku(sku: String): Result<Article?>
-
-    /**
-     * Recupera articoli per barcode
-     */
-    suspend fun getByBarcode(barcode: String): Result<Article?>
-
-    /**
      * Osserva tutti gli articoli
      */
     fun observeAll(): Flow<List<Article>>
@@ -77,12 +56,7 @@ interface ArticleRepository {
     /**
      * Osserva un articolo per UUID (Flow reattivo)
      */
-    fun observeArticleByUuid(uuid: String): Flow<Article?>
-
-    /**
-     * Osserva tutti gli articoli ordinati per nome
-     */
-    fun observeAllArticles(): Flow<List<Article>>
+    fun observeByUuid(uuid: String): Flow<Article?>
 
     /**
      * Ottiene l'inventario di un articolo

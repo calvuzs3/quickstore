@@ -10,6 +10,8 @@ import net.calvuz.quickstore.domain.model.MovementType
 import net.calvuz.quickstore.domain.repository.MovementRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import net.calvuz.quickstore.data.local.entity.InventoryEntity
+import net.calvuz.quickstore.data.local.entity.MovementEntity
 import javax.inject.Inject
 
 
@@ -59,11 +61,76 @@ class MovementRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun addMovement(
+        articleUuid: String,
+        type: MovementType,
+        quantity: Double,
+        notes: String
+    ): Result<Unit> {
+        return try {
+            // Usa una transazione per garantire consistenza
+            database.withTransaction {
+                // 1. Crea e inserisci il movimento
+                val movementEntity = MovementEntity(
+                    id = 0,
+                    articleUuid = articleUuid,
+                    type = type,
+                    quantity = quantity,
+                    notes = notes,
+                    createdAt = System.currentTimeMillis()
+                )
+                movementDao.insert(movementEntity)
+
+                // 2. Aggiorna o crea l'inventario
+                val currentInventory = inventoryDao.getByArticleUuid(articleUuid)
+
+                if (currentInventory != null) {
+                    // Aggiorna inventario esistente
+                    val newQuantity = when (type) {
+                        MovementType.IN -> currentInventory.currentQuantity + quantity
+                        MovementType.OUT -> currentInventory.currentQuantity - quantity
+                    }
+
+                    inventoryDao.update(
+                        currentInventory.copy(
+                            currentQuantity = newQuantity,
+                            lastMovementAt = System.currentTimeMillis()
+                        )
+                    )
+                } else {
+                    // Crea nuovo inventario (primo movimento)
+                    val initialQuantity = when (type) {
+                        MovementType.IN -> quantity
+                        MovementType.OUT -> -quantity  // Negativo se primo movimento è scarico
+                    }
+
+                    inventoryDao.insert(
+                        InventoryEntity(
+                            articleUuid = articleUuid,
+                            currentQuantity = initialQuantity,
+                            lastMovementAt = System.currentTimeMillis()
+                        )
+                    )
+                }
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     /**
      * Recupera tutti i movimenti
      */
     override suspend fun getAllMovements(): Result<List<Movement>> {
-        TODO("Not yet implemented")
+        return try {
+            val entities = movementDao.getAllMovements()
+            val movements = entities.map { movementMapper.toDomain(it) }
+            Result.success(movements)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     override suspend fun getMovementByUuid(uuid: String): Result<Movement?> {

@@ -34,6 +34,10 @@ fun HomeScreen(
     onNavigateToCamera: () -> Unit,
     onNavigateToAddArticle: () -> Unit,
     onArticleClick: (String) -> Unit,
+//    onNavigateToArticles: () -> Unit,
+//    onNavigateToAddArticle: () -> Unit,
+//    onNavigateToCamera: () -> Unit,      // ← ricerca con foto
+//    onNavigateToMovements: () -> Unit,   // ← lista movimenti
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -173,7 +177,7 @@ private fun QuickActionsCard(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                "Azioni Rapide",
+                "Azioni",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -338,17 +342,10 @@ private fun LowStockArticleCard(
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold
                 )
-                if (article.sku.isNotBlank()) {
-                    Text(
-                        "SKU: ${article.sku}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
             }
 
             Icon(
-                Icons.Default.KeyboardArrowRight,
+                Icons.Default.ChevronRight,
                 contentDescription = "Dettagli"
             )
         }

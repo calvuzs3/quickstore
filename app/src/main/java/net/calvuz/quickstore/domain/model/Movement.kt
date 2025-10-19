@@ -15,10 +15,3 @@ data class Movement(
     val createdAt: Long           // UTC timestamp milliseconds
 )
 
-/**
- * Enum per tipo di movimento
- */
-enum class MovementType {
-    IN,   // Carico - aumenta giacenza
-    OUT   // Scarico - diminuisce giacenza
-}

@@ -11,50 +11,17 @@ import net.calvuz.quickstore.domain.model.MovementType
 @Dao
 interface MovementDao {
 
-    /**
-     * Inserisce movimento e aggiorna inventario in una transazione
-     */
-    @Transaction
-    suspend fun insertMovementAndUpdateInventory(
-        movement: MovementEntity,
-        articleUuid: String,
-        quantityDelta: Double
-    ): Long {
-        // Inserisci movimento
-        val movementId = insert(movement)
-
-        // Aggiorna inventario
-        updateInventoryQuantity(articleUuid, quantityDelta)
-
-        return 1 //movementId
-    }
-
-    /**
-     * Aggiorna quantità inventario (usato nella transazione)
-     */
-    @Query("""
-        UPDATE inventory 
-        SET current_quantity = current_quantity + :delta,
-            last_movement_at = :lastMovementAt
-        WHERE article_uuid = :articleUuid
-    """)
-    suspend fun updateInventoryQuantity(
-        articleUuid: String,
-        delta: Double,
-        lastMovementAt: Long = System.currentTimeMillis()
-    )
-
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(movement: MovementEntity)
 
     @Delete
     suspend fun delete(movement: MovementEntity)
 
-    /**
-     * Elimina tutti i movimenti di un articolo
-     */
     @Query("DELETE FROM movements WHERE article_uuid = :articleUuid")
     suspend fun deleteByArticleUuid(articleUuid: String): Int
+
+    @Query("SELECT * FROM movements ORDER BY created_at DESC")
+    suspend fun getAllMovements(): List<MovementEntity>
 
     @Query("SELECT * FROM movements WHERE id = :id")
     suspend fun getById(id: Long): MovementEntity?
@@ -65,15 +32,9 @@ interface MovementDao {
     @Query("SELECT * FROM movements WHERE article_uuid = :articleUuid ORDER BY created_at DESC")
     suspend fun getByArticleUuid(articleUuid: String): List<MovementEntity>
 
-    /**
-     * Recupera movimenti per tipo
-     */
     @Query("SELECT * FROM movements WHERE type = :type ORDER BY created_at DESC")
     suspend fun getByType(type: String): List<MovementEntity>
 
-    /**
-     * Recupera movimenti in un range di date
-     */
     @Query("""
         SELECT * FROM movements 
         WHERE created_at BETWEEN :startTimestamp AND :endTimestamp 
@@ -81,9 +42,6 @@ interface MovementDao {
     """)
     suspend fun getByDateRange(startTimestamp: Long, endTimestamp: Long): List<MovementEntity>
 
-    /**
-     * Recupera ultimi N movimenti ordinati per data (più recenti prima)
-     */
     @Query("SELECT * FROM movements ORDER BY created_at DESC LIMIT :limit")
     suspend fun getRecentMovements(limit: Int): List<MovementEntity>
 
@@ -126,9 +84,6 @@ interface MovementDao {
     """)
     suspend fun calculateTotalQuantity(articleUuid: String): Double?
 
-    /**
-     * Conta movimenti per articolo
-     */
     @Query("SELECT COUNT(*) FROM movements WHERE article_uuid = :articleUuid")
     suspend fun countByArticle(articleUuid: String): Int
 

@@ -24,7 +24,10 @@ class GetArticleImagesUseCase @Inject constructor(
      * @param articleUuid UUID dell'articolo
      * @return Result<List<ArticleImage>> Lista immagini o Failure
      */
-    suspend operator fun invoke(articleUuid: String): Result<List<ArticleImage>> {
+    suspend operator fun invoke(
+        articleUuid: String
+    ): Result<List<ArticleImage>>
+    {
         return try {
             // Validazione input
             if (articleUuid.isBlank()) {

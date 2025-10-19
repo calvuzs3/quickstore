@@ -20,6 +20,12 @@ interface MovementRepository {
      * @return Result con Unit in caso di successo, errore altrimenti
      */
     suspend fun addMovement(movement: Movement): Result<Unit>
+    suspend fun addMovement(
+        articleUuid: String,
+        type: MovementType,
+        quantity: Double,
+        notes: String
+    ): Result<Unit>
 
     /**
      * Recupera tutti i movimenti

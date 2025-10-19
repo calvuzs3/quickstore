@@ -37,4 +37,11 @@ class InventoryMapper @Inject constructor() {
     fun toDomainList(entities: List<InventoryEntity>): List<Inventory> {
         return entities.map { toDomain(it) }
     }
+
+    /**
+     * Converte lista di Domain Model a lista di Entity
+     */
+    fun toEntityList(inventories: List<Inventory>): List<InventoryEntity> {
+        return inventories.map { toEntity(it) }
+    }
 }

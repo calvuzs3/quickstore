@@ -11,8 +11,6 @@ data class Article(
     val uuid: String,
     val name: String,
     val description: String,
-    val sku: String,              // Stock Keeping Unit - identificativo interno
-    val barcode: String,          // Codice a barre (EAN, UPC, etc.)
     val category: String,
     val unitOfMeasure: String,    // pz, kg, lt, mt, etc.
     val reorderLevel: Double,     // Soglia sotto scorta (0 = disabilitato)

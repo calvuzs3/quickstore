@@ -1,5 +1,6 @@
 package net.calvuz.quickstore.data.repository
 
+import android.util.Log
 import net.calvuz.quickstore.data.local.database.ArticleImageDao
 import net.calvuz.quickstore.data.local.entity.ArticleImageEntity
 import net.calvuz.quickstore.data.local.storage.ImageStorageManager
@@ -138,22 +139,36 @@ class ImageRecognitionRepositoryImpl @Inject constructor(
         threshold: Double
     ): Result<List<String>> {
         return try {
+            Log.d("ImageSearch", "🔍 START - Threshold: $threshold")
+
             // Verifica OpenCV inizializzato
             if (!openCVManager.isInitialized()) {
+                Log.e("ImageSearch", "❌ OpenCV not initialized")
                 return Result.failure(IllegalStateException("OpenCV not initialized"))
             }
 
             // 1. Estrai features dall'immagine query
+            Log.d("ImageSearch", "📸 Extracting query features...")
             val queryFeatures = featureExtractor.extractFeatures(imageData)
-                .getOrElse { return Result.failure(it) }
+                .getOrElse {
+                    Log.e("ImageSearch", "❌ Failed to extract features: ${it.message}")
+                    return Result.failure(it)
+                }
+            Log.d("ImageSearch", "✅ Query features extracted: ${queryFeatures.size} bytes")
 
             val queryDescriptors = featureExtractor.deserializeDescriptors(queryFeatures)
-                .getOrElse { return Result.failure(it) }
+                .getOrElse {
+                    Log.e("ImageSearch", "❌ Failed to deserialize: ${it.message}")
+                    return Result.failure(it)
+                }
+            Log.d("ImageSearch", "✅ Query descriptors: ${queryDescriptors.rows()} features")
 
             // 2. Ottieni tutte le immagini salvate
             val allImages = articleImageDao.getAll()
+            Log.d("ImageSearch", "📦 Database images: ${allImages.size}")
 
             if (allImages.isEmpty()) {
+                Log.w("ImageSearch", "⚠️ No images in database")
                 queryDescriptors.release()
                 return Result.success(emptyList())
             }
@@ -161,25 +176,40 @@ class ImageRecognitionRepositoryImpl @Inject constructor(
             // 3. Deserializza tutti i descriptors
             val databaseDescriptors = allImages.mapNotNull { image ->
                 featureExtractor.deserializeDescriptors(image.featuresData)
+                    .onSuccess {
+                        Log.d("ImageSearch", "  ✓ Image ${image.id}: ${it.rows()} features")
+                    }
+                    .onFailure {
+                        Log.e("ImageSearch", "  ✗ Image ${image.id}: Failed to deserialize")
+                    }
                     .getOrNull()
             }
+            Log.d("ImageSearch", "✅ Deserialized ${databaseDescriptors.size}/${allImages.size} images")
 
             // 4. Trova best matches
+            Log.d("ImageSearch", "🔄 Finding matches...")
             val matchResults = imageMatcher.findBestMatches(
                 queryDescriptors,
                 databaseDescriptors,
                 threshold
             ).getOrElse {
-                // Cleanup
+                Log.e("ImageSearch", "❌ Matching failed: ${it.message}")
                 queryDescriptors.release()
                 databaseDescriptors.forEach { it.release() }
                 return Result.failure(it)
             }
 
+            Log.d("ImageSearch", "🎯 Matches found: ${matchResults.size}")
+            matchResults.forEach { result ->
+                Log.d("ImageSearch", "  Match: index=${result.index}, similarity=${result.similarity}")
+            }
+
             // 5. Mappa indici a articleUuid
             val matchedArticleUuids = matchResults.map { result ->
                 allImages[result.index].articleUuid
-            }.distinct() // Rimuovi duplicati (stesso articolo può avere più immagini)
+            }.distinct()
+
+            Log.d("ImageSearch", "✅ Final articles: ${matchedArticleUuids.size}")
 
             // 6. Cleanup OpenCV Mats
             queryDescriptors.release()
@@ -188,6 +218,7 @@ class ImageRecognitionRepositoryImpl @Inject constructor(
             Result.success(matchedArticleUuids)
 
         } catch (e: Exception) {
+            Log.e("ImageSearch", "💥 Exception: ${e.message}", e)
             Result.failure(e)
         }
     }

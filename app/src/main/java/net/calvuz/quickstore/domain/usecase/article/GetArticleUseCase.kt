@@ -39,17 +39,17 @@ class GetArticleUseCase @Inject constructor(
     }
 
     /**
-     * Osserva un articolo per UUID (Flow reattivo)
-     */
-    fun observeByUuid(uuid: String): Flow<Article?> {
-        return articleRepository.observeArticleByUuid(uuid)
-    }
-
-    /**
      * Osserva tutti gli articoli
      */
     fun observeAll(): Flow<List<Article>> {
-        return articleRepository.observeAllArticles()
+        return articleRepository.observeAll()
+    }
+
+    /**
+     * Osserva un articolo per UUID (Flow reattivo)
+     */
+    fun observeByUuid(uuid: String): Flow<Article?> {
+        return articleRepository.observeByUuid(uuid)
     }
 
     /**

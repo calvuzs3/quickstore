@@ -5,63 +5,52 @@ import net.calvuz.quickstore.domain.repository.ArticleRepository
 import javax.inject.Inject
 
 /**
- * Use Case per aggiornare i dati anagrafici di un articolo
+ * Use Case per aggiornare un articolo esistente
  *
- * Note: Questo aggiorna solo i dati dell'articolo, NON la quantità in magazzino.
- * Per modificare la quantità, usare AddMovementUseCase.
+ * Nota: Questo use case aggiorna SOLO i dati anagrafici dell'articolo.
+ * La giacenza (inventory) viene modificata solo tramite i movimenti.
  */
 class UpdateArticleUseCase @Inject constructor(
     private val articleRepository: ArticleRepository
 ) {
-    /**
-     * Aggiorna un articolo esistente
-     *
-     * @param article Articolo con dati aggiornati
-     * @return Result con Unit in caso di successo, errore altrimenti
-     */
     suspend operator fun invoke(article: Article): Result<Unit> {
-        // Validazione
-        if (article.name.isBlank()) {
-            return Result.failure(IllegalArgumentException("Article name cannot be blank"))
+        return try {
+            // Validazioni
+            if (article.uuid.isBlank()) {
+                return Result.failure(IllegalArgumentException("UUID non valido"))
+            }
+
+            if (article.name.isBlank()) {
+                return Result.failure(IllegalArgumentException("Il nome è obbligatorio"))
+            }
+
+            if (article.unitOfMeasure.isBlank()) {
+                return Result.failure(IllegalArgumentException("L'unità di misura è obbligatoria"))
+            }
+
+            if (article.reorderLevel < 0) {
+                return Result.failure(IllegalArgumentException("La soglia non può essere negativa"))
+            }
+
+            // Verifica che l'articolo esista
+            articleRepository.getByUuid(article.uuid)
+                .onSuccess { existingArticle ->
+                    if (existingArticle == null) {
+                        return Result.failure(IllegalArgumentException("Articolo non trovato"))
+                    }
+                }
+                .onFailure {
+                    return Result.failure(it)
+                }
+
+            // Aggiorna articolo (con updatedAt corrente)
+            val updatedArticle = article.copy(
+                updatedAt = System.currentTimeMillis()
+            )
+
+            articleRepository.updateArticle(updatedArticle)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
-
-        if (article.unitOfMeasure.isBlank()) {
-            return Result.failure(IllegalArgumentException("Unit of measure cannot be blank"))
-        }
-
-        // Aggiorna il timestamp
-        val updatedArticle = article.copy(
-            updatedAt = System.currentTimeMillis()
-        )
-
-        return articleRepository.updateArticle(updatedArticle)
-    }
-
-    /**
-     * Aggiorna solo alcuni campi di un articolo
-     */
-    suspend fun updateFields(
-        uuid: String,
-        name: String? = null,
-        description: String? = null,
-        unitOfMeasure: String? = null,
-        category: String? = null
-    ): Result<Unit> {
-        // Recupera l'articolo esistente
-        val existingArticle = articleRepository.getArticleByUuid(uuid)
-            .getOrElse {
-                return Result.failure(IllegalArgumentException("Article not found"))
-            } ?: return Result.failure(IllegalArgumentException("Article not found"))
-
-        // Crea versione aggiornata
-        val updatedArticle = existingArticle.copy(
-            name = name?.trim() ?: existingArticle.name,
-            description = description?.trim() ?: existingArticle.description,
-            unitOfMeasure = unitOfMeasure?.trim()?.uppercase() ?: existingArticle.unitOfMeasure,
-            category = category?.trim() ?: existingArticle.category,
-            updatedAt = System.currentTimeMillis()
-        )
-
-        return articleRepository.updateArticle(updatedArticle)
     }
 }

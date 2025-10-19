@@ -24,8 +24,6 @@ class AddArticleUseCase @Inject constructor(
     suspend operator fun invoke(
         name: String,
         description: String,
-        sku: String,
-        barcode: String,
         recorderLevel: Double,
         notes: String,
         unitOfMeasure: String,
@@ -51,8 +49,6 @@ class AddArticleUseCase @Inject constructor(
             uuid = UUID.randomUUID().toString(),
             name = name.trim(),
             description = description.trim(),
-            sku = sku.trim(),
-            barcode = barcode.trim(),
             reorderLevel = recorderLevel,
             notes = notes,
             unitOfMeasure = unitOfMeasure.trim().uppercase(),

@@ -125,6 +125,20 @@ dependencies {
     // UUID
     implementation(libs.uuid)
 
+    // DataStore per le impostazioni
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Apache POI per Excel export
+    implementation("org.apache.poi:poi:5.2.4")
+    implementation("org.apache.poi:poi-ooxml:5.2.4")
+    implementation("org.apache.poi:poi-scratchpad:5.2.4")
+
+    // Per compressione e gestione XML (richiesto da POI)
+    implementation("com.fasterxml.jackson.core:jackson-core:2.15.2")
+
+    // Permission handling (per accesso storage)
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

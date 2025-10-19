@@ -51,9 +51,7 @@ class ArticleListViewModel @Inject constructor(
         if (query.isNotBlank()) {
             filtered = filtered.filter { article ->
                 article.name.contains(query, ignoreCase = true) ||
-                        article.sku.contains(query, ignoreCase = true) ||
-                        article.barcode.contains(query, ignoreCase = true) ||
-                        article.description.contains(query, ignoreCase = true)
+                article.description.contains(query, ignoreCase = true)
             }
         }
 

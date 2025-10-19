@@ -19,7 +19,7 @@ import net.calvuz.quickstore.data.local.entity.MovementEntity
         ArticleImageEntity::class
     ],
     version = 1,
-    exportSchema = true
+    exportSchema = false
 )
 abstract class QuickStoreDatabase: RoomDatabase() {
 
@@ -29,6 +29,6 @@ abstract class QuickStoreDatabase: RoomDatabase() {
     abstract fun articleImageDao(): ArticleImageDao
 
     companion object {
-        const val DATABASE_NAME = "warehouse_database"
+        const val DATABASE_NAME = "warehouse_db"
     }
 }

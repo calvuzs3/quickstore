@@ -4,17 +4,22 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import net.calvuz.quickstore.domain.model.Article
+import java.io.File
 
 /**
  * Article List Screen
@@ -24,6 +29,7 @@ import net.calvuz.quickstore.domain.model.Article
  * - Search bar
  * - Filtri per categoria
  * - Swipe to delete
+ * - Thumbnail foto articolo
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -267,19 +273,11 @@ private fun ArticleCard(
                 .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Icon
-            Surface(
-                modifier = Modifier.size(56.dp),
-                shape = MaterialTheme.shapes.small,
-                color = MaterialTheme.colorScheme.primaryContainer
-            ) {
-                Icon(
-                    Icons.Default.Warehouse,
-                    contentDescription = null,
-                    modifier = Modifier.padding(12.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-            }
+            // Foto thumbnail o icona placeholder
+            ArticleThumbnail(
+                articleId = article.uuid,
+                modifier = Modifier.size(56.dp)
+            )
 
             // Content
             Column(
@@ -298,26 +296,6 @@ private fun ArticleCard(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    if (article.sku.isNotBlank()) {
-                        Text(
-                            text = "SKU: ${article.sku}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    if (article.barcode.isNotBlank()) {
-                        Text(
-                            text = "Barcode: ${article.barcode}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                 }
             }
 
@@ -340,6 +318,52 @@ private fun ArticleCard(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ArticleThumbnail(
+    articleId: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+
+    // Cerca la prima immagine dell'articolo
+    val firstImagePath = remember(articleId) {
+        val articleDir = File(context.filesDir, "article_images/$articleId")
+        if (articleDir.exists() && articleDir.isDirectory) {
+            articleDir.listFiles()?.firstOrNull()?.let {
+                File(context.filesDir, "article_images/$articleId/${it.name}").absolutePath
+            }
+        } else {
+            null
+        }
+    }
+
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(8.dp),
+        color = if (firstImagePath != null) {
+            MaterialTheme.colorScheme.surface
+        } else {
+            MaterialTheme.colorScheme.primaryContainer
+        }
+    ) {
+        if (firstImagePath != null) {
+            AsyncImage(
+                model = File(firstImagePath),
+                contentDescription = "Foto articolo",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Icon(
+                Icons.Default.Warehouse,
+                contentDescription = null,
+                modifier = Modifier.padding(12.dp),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         }
     }
 }

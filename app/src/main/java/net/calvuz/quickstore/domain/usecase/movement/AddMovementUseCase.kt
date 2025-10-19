@@ -4,7 +4,6 @@ import net.calvuz.quickstore.domain.model.Movement
 import net.calvuz.quickstore.domain.model.MovementType
 import net.calvuz.quickstore.domain.repository.ArticleRepository
 import net.calvuz.quickstore.domain.repository.MovementRepository
-import java.util.UUID
 import javax.inject.Inject
 
 /**
@@ -24,14 +23,14 @@ class AddMovementUseCase @Inject constructor(
      * @param articleUuid UUID dell'articolo
      * @param type Tipo movimentazione (IN/OUT)
      * @param quantity Quantità (sempre positiva)
-     * @param note Note descrittive
+     * @param notes Note descrittive
      * @return Result con Movement creato, errore altrimenti
      */
     suspend operator fun invoke(
         articleUuid: String,
         type: MovementType,
         quantity: Double,
-        note: String = ""
+        notes: String = ""
     ): Result<Movement> {
         // Validazione input
         if (articleUuid.isBlank()) {
@@ -43,7 +42,7 @@ class AddMovementUseCase @Inject constructor(
         }
 
         // Verifica che l'articolo esista
-        val articleExists = articleRepository.getArticleByUuid(articleUuid)
+        val articleExists = articleRepository.getByUuid(articleUuid)
             .getOrElse {
                 return Result.failure(it)
             }
@@ -78,7 +77,7 @@ class AddMovementUseCase @Inject constructor(
             articleUuid = articleUuid,
             type = type,
             quantity = quantity,
-            notes = note.trim(),
+            notes = notes.trim(),
             createdAt  = System.currentTimeMillis()
         )
 

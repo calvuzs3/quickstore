@@ -28,32 +28,6 @@ class ArticleImageMapper @Inject constructor() {
         )
     }
 
-//    /**
-//     * Converte da Entity a Domain Model
-//     */
-//    fun toDomain(entity: ArticleImageEntity): ArticleImage {
-//        return ArticleImage(
-//            id = entity.id,
-//            articleUuid = entity.articleUuid,
-//            imagePath = entity.imagePath,
-//            featuresData = entity.featuresData,
-//            createdAt = entity.createdAt
-//        )
-//    }
-//
-//    /**
-//     * Converte da Domain Model a Entity
-//     */
-//    fun toEntity(domain: ArticleImage): ArticleImageEntity {
-//        return ArticleImageEntity(
-//            id = domain.id,
-//            articleUuid = domain.articleUuid,
-//            imagePath = domain.imagePath,
-//            featuresData = domain.featuresData,
-//            createdAt = domain.createdAt
-//        )
-//    }
-
     /**
      * Converte una lista di Entity in lista di Domain Models
      */

@@ -26,7 +26,7 @@ class DeleteArticleUseCase @Inject constructor(
         }
 
         // Verifica che l'articolo esista
-        val article = articleRepository.getArticleByUuid(uuid)
+        val article = articleRepository.getByUuid(uuid)
             .getOrElse {
                 return Result.failure(it)
             }

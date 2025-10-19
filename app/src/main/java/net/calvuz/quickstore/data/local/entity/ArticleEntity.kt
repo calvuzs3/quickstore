@@ -2,6 +2,7 @@ package net.calvuz.quickstore.data.local.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
@@ -10,7 +11,13 @@ import androidx.room.PrimaryKey
  * Note: current_quantity NON è qui per evitare di aggiornare updated_at
  * ad ogni movimentazione. La quantità è gestita nella tabella inventory.
  */
-@Entity(tableName = "articles")
+@Entity(
+    tableName = "articles",
+    indices = [
+        Index(value = ["name"]),
+        Index(value = ["category"])
+    ]
+)
 data class ArticleEntity(
 
     @PrimaryKey
@@ -22,12 +29,6 @@ data class ArticleEntity(
 
     @ColumnInfo(name = "description")
     val description: String,
-
-    @ColumnInfo(name = "sku")
-    val sku: String,  // Stock Keeping Unit - identificativo interno
-
-    @ColumnInfo(name = "barcode")
-    val barcode: String,  // Codice a barre (EAN, UPC, etc.)
 
     @ColumnInfo(name = "category")
     val category: String,

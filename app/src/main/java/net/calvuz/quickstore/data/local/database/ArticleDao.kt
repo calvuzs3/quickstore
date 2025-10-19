@@ -34,48 +34,21 @@ interface ArticleDao {
     @Query("SELECT * FROM articles WHERE name LIKE '%' || :searchQuery || '%' ORDER BY name ASC")
     fun searchByName(searchQuery: String): List<ArticleEntity>
 
-    /**
-     * Recupera articoli per categoria
-     */
     @Query("SELECT * FROM articles WHERE category = :category ORDER BY name ASC")
     suspend fun getByCategory(category: String): List<ArticleEntity>
 
-    /**
-     * Recupera articolo per SKU
-     */
-    @Query("SELECT * FROM articles WHERE sku = :sku")
-    suspend fun getBySku(sku: String): ArticleEntity?
-
-    /**
-     * Recupera articolo per barcode
-     */
-    @Query("SELECT * FROM articles WHERE barcode = :barcode")
-    suspend fun getByBarcode(barcode: String): ArticleEntity?
-
-    /**
-     * Conta articoli totali
-     */
     @Query("SELECT COUNT(*) FROM articles")
     suspend fun count(): Int
 
     @Query("SELECT COUNT(*) FROM articles")
     suspend fun getCount(): Int
 
-    /**
-     * Conta articoli per categoria
-     */
     @Query("SELECT COUNT(*) FROM articles WHERE category = :category")
     suspend fun countByCategory(category: String): Int
 
-    /**
-     * Verifica esistenza articolo per UUID
-     */
     @Query("SELECT EXISTS(SELECT 1 FROM articles WHERE uuid = :uuid)")
     suspend fun exists(uuid: String): Boolean
 
-    /**
-     * Recupera tutte le categorie uniche
-     */
     @Query("SELECT DISTINCT category FROM articles WHERE category != '' ORDER BY category ASC")
     suspend fun getAllCategories(): List<String>
 }
