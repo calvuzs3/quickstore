@@ -15,6 +15,7 @@ import net.calvuz.quickstore.presentation.ui.camera.SearchResultsScreen
 import net.calvuz.quickstore.presentation.ui.home.HomeScreen
 import net.calvuz.quickstore.presentation.ui.movements.add.AddMovementScreen
 import net.calvuz.quickstore.presentation.ui.movements.list.MovementListScreen
+import net.calvuz.quickstore.presentation.ui.settings.RecognitionSettingsScreen
 
 /**
  * Sealed class per definire tutte le rotte dell'app
@@ -46,10 +47,13 @@ sealed class Screen(val route: String) {
     data object AddMovement : Screen("movement/add/{articleId}") {
         fun createRoute(articleId: String) = "movement/add/$articleId"
     }
+
+    // Impostazioni
+    data object RecognitionSettings : Screen("settings/recognition")
 }
 
 /**
- * Setup della navigazione completa dell'app
+ * Setup della navigazione completa dell'app con settings
  */
 @Composable
 fun AppNavigation(
@@ -75,6 +79,9 @@ fun AppNavigation(
                 onNavigateToMovements = {
                     navController.navigate(Screen.MovementList.route)
                 },
+                onNavigateToSettings = {
+                    navController.navigate(Screen.RecognitionSettings.route)
+                },
                 onArticleClick = { articleId ->
                     navController.navigate(Screen.ArticleDetail.createRoute(articleId))
                 }
@@ -93,7 +100,6 @@ fun AppNavigation(
                 onAddArticleClick = {
                     navController.navigate(Screen.AddArticle.route)
                 }
-                // viewModel viene iniettato automaticamente da Hilt
             )
         }
 
@@ -152,8 +158,7 @@ fun AppNavigation(
                     type = NavType.StringType
                 }
             )
-        ) {
-            backStackEntry ->
+        ) { backStackEntry ->
             val articleId = backStackEntry.arguments?.getString("articleId") ?: return@composable
 
             AddMovementScreen(
@@ -208,6 +213,15 @@ fun AppNavigation(
                 },
                 onArticleClick = { articleUuid ->
                     navController.navigate(Screen.ArticleDetail.createRoute(articleUuid))
+                }
+            )
+        }
+
+        // ========== RECOGNITION SETTINGS SCREEN ==========
+        composable(Screen.RecognitionSettings.route) {
+            RecognitionSettingsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }

@@ -24,7 +24,7 @@ import net.calvuz.quickstore.domain.model.Article
 import net.calvuz.quickstore.domain.model.ArticleImage
 import net.calvuz.quickstore.domain.model.Inventory
 import net.calvuz.quickstore.domain.model.Movement
-import net.calvuz.quickstore.domain.model.MovementType
+import net.calvuz.quickstore.domain.model.enum.MovementType
 import java.io.File
 import java.time.Instant
 import java.time.ZoneId

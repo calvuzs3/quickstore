@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import net.calvuz.quickstore.domain.model.MovementType
+import net.calvuz.quickstore.domain.model.enum.MovementType
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

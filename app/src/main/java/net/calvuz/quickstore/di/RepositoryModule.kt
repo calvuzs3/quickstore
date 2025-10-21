@@ -15,6 +15,11 @@ import net.calvuz.quickstore.data.repository.MovementRepositoryImpl
 import net.calvuz.quickstore.domain.repository.ArticleRepository
 import net.calvuz.quickstore.domain.repository.ImageRecognitionRepository
 import net.calvuz.quickstore.domain.repository.MovementRepository
+import net.calvuz.quickstore.domain.repository.RecognitionSettingsRepository
+import net.calvuz.quickstore.domain.usecase.settings.ApplyRecognitionPresetUseCase
+import net.calvuz.quickstore.domain.usecase.settings.GetRecognitionSettingsUseCase
+import net.calvuz.quickstore.domain.usecase.settings.ResetRecognitionSettingsUseCase
+import net.calvuz.quickstore.domain.usecase.settings.UpdateRecognitionSettingsUseCase
 import javax.inject.Singleton
 
 /**
@@ -76,5 +81,39 @@ object MapperModule {
     @Singleton
     fun provideArticleImageMapper(): ArticleImageMapper {
         return ArticleImageMapper()
+    }
+}
+
+
+@Module
+@InstallIn(SingletonComponent::class)
+object SettingsUseCaseModule {
+
+    @Provides
+    fun provideGetRecognitionSettingsUseCase(
+        repository: RecognitionSettingsRepository
+    ): GetRecognitionSettingsUseCase {
+        return GetRecognitionSettingsUseCase(repository)
+    }
+
+    @Provides
+    fun provideUpdateRecognitionSettingsUseCase(
+        repository: RecognitionSettingsRepository
+    ): UpdateRecognitionSettingsUseCase {
+        return UpdateRecognitionSettingsUseCase(repository)
+    }
+
+    @Provides
+    fun provideApplyRecognitionPresetUseCase(
+        repository: RecognitionSettingsRepository
+    ): ApplyRecognitionPresetUseCase {
+        return ApplyRecognitionPresetUseCase(repository)
+    }
+
+    @Provides
+    fun provideResetRecognitionSettingsUseCase(
+        repository: RecognitionSettingsRepository
+    ): ResetRecognitionSettingsUseCase {
+        return ResetRecognitionSettingsUseCase(repository)
     }
 }

@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import net.calvuz.quickstore.domain.model.MovementType
+import net.calvuz.quickstore.domain.model.enum.MovementType
 
 /**
  * Entity per la tabella movements - Storico movimentazioni magazzino

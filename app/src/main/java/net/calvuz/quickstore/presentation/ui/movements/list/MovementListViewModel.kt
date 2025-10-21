@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.calvuz.quickstore.domain.model.Article
 import net.calvuz.quickstore.domain.model.Movement
-import net.calvuz.quickstore.domain.model.MovementType
+import net.calvuz.quickstore.domain.model.enum.MovementType
 import net.calvuz.quickstore.domain.usecase.article.GetArticleUseCase
 import net.calvuz.quickstore.domain.usecase.movement.GetAllMovementsUseCase
 import javax.inject.Inject

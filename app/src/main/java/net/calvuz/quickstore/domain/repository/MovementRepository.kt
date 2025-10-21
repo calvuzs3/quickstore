@@ -1,7 +1,7 @@
 package net.calvuz.quickstore.domain.repository
 
 import net.calvuz.quickstore.domain.model.Movement
-import net.calvuz.quickstore.domain.model.MovementType
+import net.calvuz.quickstore.domain.model.enum.MovementType
 import kotlinx.coroutines.flow.Flow
 
 /**

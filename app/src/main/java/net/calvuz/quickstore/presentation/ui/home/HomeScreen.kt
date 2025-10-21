@@ -15,7 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.calvuz.quickstore.domain.model.Article
 import net.calvuz.quickstore.domain.model.Movement
-import net.calvuz.quickstore.domain.model.MovementType
+import net.calvuz.quickstore.domain.model.enum.MovementType
 
 /**
  * Home Screen - Dashboard principale
@@ -25,6 +25,7 @@ import net.calvuz.quickstore.domain.model.MovementType
  * - Articoli sotto scorta
  * - Ultimi movimenti
  * - Azioni rapide
+ * - Impostazioni
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,11 +34,8 @@ fun HomeScreen(
     onNavigateToMovements: () -> Unit,
     onNavigateToCamera: () -> Unit,
     onNavigateToAddArticle: () -> Unit,
+    onNavigateToSettings: () -> Unit, // Nuovo parametro
     onArticleClick: (String) -> Unit,
-//    onNavigateToArticles: () -> Unit,
-//    onNavigateToAddArticle: () -> Unit,
-//    onNavigateToCamera: () -> Unit,      // ← ricerca con foto
-//    onNavigateToMovements: () -> Unit,   // ← lista movimenti
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -47,6 +45,10 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text("QuickStore") },
                 actions = {
+                    // Bottone settings
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, "Impostazioni")
+                    }
                     IconButton(onClick = { viewModel.refresh() }) {
                         Icon(Icons.Default.Refresh, "Aggiorna")
                     }
@@ -97,6 +99,7 @@ fun HomeScreen(
         }
     }
 }
+
 
 @Composable
 private fun DashboardContent(

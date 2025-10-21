@@ -1,5 +1,7 @@
 package net.calvuz.quickstore.domain.model
 
+import net.calvuz.quickstore.domain.model.enum.MovementType
+
 /**
  * Domain Model per Movimento Magazzino
  *

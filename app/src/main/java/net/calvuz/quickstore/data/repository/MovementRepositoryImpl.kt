@@ -6,7 +6,7 @@ import net.calvuz.quickstore.data.local.database.MovementDao
 import net.calvuz.quickstore.data.local.database.InventoryDao
 import net.calvuz.quickstore.data.mapper.MovementMapper
 import net.calvuz.quickstore.domain.model.Movement
-import net.calvuz.quickstore.domain.model.MovementType
+import net.calvuz.quickstore.domain.model.enum.MovementType
 import net.calvuz.quickstore.domain.repository.MovementRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

@@ -1,7 +1,7 @@
 package net.calvuz.quickstore.domain.usecase.movement
 
 import net.calvuz.quickstore.domain.model.Movement
-import net.calvuz.quickstore.domain.model.MovementType
+import net.calvuz.quickstore.domain.model.enum.MovementType
 import net.calvuz.quickstore.domain.repository.ArticleRepository
 import net.calvuz.quickstore.domain.repository.MovementRepository
 import javax.inject.Inject

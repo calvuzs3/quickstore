@@ -6,12 +6,12 @@ import net.calvuz.quickstore.data.local.entity.ArticleImageEntity
 import net.calvuz.quickstore.data.local.storage.ImageStorageManager
 import net.calvuz.quickstore.data.mapper.ArticleImageMapper
 import net.calvuz.quickstore.data.opencv.FeatureExtractor
-import net.calvuz.quickstore.data.opencv.ImageMatcher
 import net.calvuz.quickstore.data.opencv.OpenCVManager
 import net.calvuz.quickstore.domain.model.ArticleImage
 import net.calvuz.quickstore.domain.repository.ImageRecognitionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import net.calvuz.quickstore.data.opencv.ConfigurableImageMatcher
 import javax.inject.Inject
 
 /**
@@ -21,7 +21,7 @@ class ImageRecognitionRepositoryImpl @Inject constructor(
     private val articleImageDao: ArticleImageDao,
     private val imageStorageManager: ImageStorageManager,
     private val featureExtractor: FeatureExtractor,
-    private val imageMatcher: ImageMatcher,
+    private val imageMatcher: ConfigurableImageMatcher,
     private val openCVManager: OpenCVManager,
     private val mapper: ArticleImageMapper
 ) : ImageRecognitionRepository {

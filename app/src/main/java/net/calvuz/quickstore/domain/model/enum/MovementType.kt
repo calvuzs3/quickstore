@@ -1,4 +1,4 @@
-package net.calvuz.quickstore.domain.model
+package net.calvuz.quickstore.domain.model.enum
 
 /**
  * Enum per tipo di movimento

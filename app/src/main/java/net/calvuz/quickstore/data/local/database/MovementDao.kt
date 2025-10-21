@@ -3,7 +3,7 @@ package net.calvuz.quickstore.data.local.database
 import androidx.room.*
 import net.calvuz.quickstore.data.local.entity.MovementEntity
 import kotlinx.coroutines.flow.Flow
-import net.calvuz.quickstore.domain.model.MovementType
+import net.calvuz.quickstore.domain.model.enum.MovementType
 
 /**
  * DAO per operazioni sulla tabella movements

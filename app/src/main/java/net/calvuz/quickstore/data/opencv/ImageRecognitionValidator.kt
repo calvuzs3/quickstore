@@ -13,7 +13,7 @@ import javax.inject.Singleton
 @Singleton
 class ImageRecognitionValidator @Inject constructor(
     private val featureExtractor: FeatureExtractor,
-    private val imageMatcher: ImageMatcher,
+    private val configurableImageMatcher: ConfigurableImageMatcher, // Cambiato da ImageMatcher
     private val openCVManager: OpenCVManager,
     private val articleImageDao: ArticleImageDao
 ) {
@@ -168,9 +168,9 @@ class ImageRecognitionValidator @Inject constructor(
                 featureExtractor.deserializeDescriptors(image.featuresData).getOrNull()
             }
 
-            // 4. Testa matching
+            // 4. Testa matching con matcher configurabile
             val matchingStartTime = System.currentTimeMillis()
-            val matchResults = imageMatcher.findBestMatches(
+            val matchResults = configurableImageMatcher.findBestMatches(
                 testDescriptors,
                 databaseDescriptors,
                 0.3 // Soglia bassa per test
